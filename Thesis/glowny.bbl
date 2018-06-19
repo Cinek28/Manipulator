@@ -1,0 +1,370 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.5 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \sortlist{nty}{nty}
+    \entry{algorytmy_edu}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=3b06baed5bf6c7da8cd8889ec086e657}{algorytmów}{a\bibinitperiod}{Encyklopedia}{E\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{3b06baed5bf6c7da8cd8889ec086e657}
+      \strng{fullhash}{3b06baed5bf6c7da8cd8889ec086e657}
+      \field{sortinit}{a}
+      \field{sortinithash}{b685c7856330eaee22789815b49de9bb}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{30}
+      \field{month}{03}
+      \field{title}{Algorytm Bellmana Forda}
+      \field{year}{2017}
+      \verb{url}
+      \verb http://algorytmy.ency.pl/artykul/algorytm_bellmana_forda
+      \endverb
+    \endentry
+    \entry{enkoder}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=065d784b407aa4ed171c0461a8e7cca7}{AMS}{A\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{065d784b407aa4ed171c0461a8e7cca7}
+      \strng{fullhash}{065d784b407aa4ed171c0461a8e7cca7}
+      \field{sortinit}{A}
+      \field{sortinithash}{b685c7856330eaee22789815b49de9bb}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{AS5304 Linear Sensor Datasheet}
+      \verb{url}
+      \verb http://ams.com/eng/Products/Magnetic-Position-Sensors/Linear-Position/AS5304
+      \endverb
+    \endentry
+    \entry{kalman}{book}{}
+      \name{author}{1}{}{%
+        {{hash=ee1312d0aba8910509c8294b90c39856}{Andrews}{A\bibinitperiod}{Grewal;}{G\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{2}{%
+        {John Wiley}%
+        {Sons}%
+      }
+      \strng{namehash}{ee1312d0aba8910509c8294b90c39856}
+      \strng{fullhash}{ee1312d0aba8910509c8294b90c39856}
+      \field{sortinit}{A}
+      \field{sortinithash}{b685c7856330eaee22789815b49de9bb}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Kalman Filtering: Theory and Practice Using Matlaba}
+      \field{year}{2001}
+    \endentry
+    \entry{bernst}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=d03ceecc3b2698d91918cbe606a01c4f}{Berns}{B\bibinitperiod}{Karsten}{K\bibinitperiod}{}{}{}{}}%
+      }
+      \list{institution}{1}{%
+        {Wydział Mechaniczny Energetyki i Lotnictwa Politechniki Warszawskiej}%
+      }
+      \strng{namehash}{d03ceecc3b2698d91918cbe606a01c4f}
+      \strng{fullhash}{d03ceecc3b2698d91918cbe606a01c4f}
+      \field{sortinit}{B}
+      \field{sortinithash}{4ecbea03efd0532989d3836d1a048c32}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Wykład zapraszany na Wydziale Mechanicznym Energetyki i Lotnictwa Politechniki Warszawskiej}
+      \field{title}{Autonomous Mobile Robots}
+      \field{year}{2016}
+    \endentry
+    \entry{EKF_strona}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=837ca6c62c210016851903d2419b872b}{Esme}{E\bibinitperiod}{Bilgin}{B\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{837ca6c62c210016851903d2419b872b}
+      \strng{fullhash}{837ca6c62c210016851903d2419b872b}
+      \field{sortinit}{E}
+      \field{sortinithash}{fefc5210ef4721525b2a478df41efcd4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{16}
+      \field{month}{03}
+      \field{title}{Kalman Filter For Dummies}
+      \field{year}{2017}
+      \verb{url}
+      \verb http://bilgin.esme.org/%20BitsAndBytes/KalmanFilterforDummies
+      \endverb
+    \endentry
+    \entry{MPU}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=6fbe7aeb9d2856a9826682a8c8fcefdf}{Invensense}{I\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{6fbe7aeb9d2856a9826682a8c8fcefdf}
+      \strng{fullhash}{6fbe7aeb9d2856a9826682a8c8fcefdf}
+      \field{sortinit}{I}
+      \field{sortinithash}{25e99d37ba90f7c4fb20baf4e310faf3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{MPU-6050 Datasheet}
+      \verb{url}
+      \verb https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf
+      \endverb
+    \endentry
+    \entry{podstawy_robotyki}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=6fe7edd8c592a6d9d5198511dd9e9323}{Jakubiak}{J\bibinitperiod}{Janusz}{J\bibinitperiod}{}{}{}{}}%
+      }
+      \list{institution}{1}{%
+        {Instytut Informatyki, Automatyki i Robotyki Politechnika Wrocławska}%
+      }
+      \strng{namehash}{6fe7edd8c592a6d9d5198511dd9e9323}
+      \strng{fullhash}{6fe7edd8c592a6d9d5198511dd9e9323}
+      \field{sortinit}{J}
+      \field{sortinithash}{ec3950a647c092421b9fcca6d819504a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Wykład}
+      \field{title}{Podstawy Robotyki, Wykład VII, Kinematyka robota mobilnego}
+      \field{year}{2015}
+    \endentry
+    \entry{metody}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=eb7742cb8a65887ac552bc3346bdbcab}{marcin13021988}{m\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{eb7742cb8a65887ac552bc3346bdbcab}
+      \strng{fullhash}{eb7742cb8a65887ac552bc3346bdbcab}
+      \field{sortinit}{m}
+      \field{sortinithash}{2684bec41e9697b92699b46491061da2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{20}
+      \field{month}{09}
+      \field{title}{Roboty MicroMouse – 5 metod przeszukiwania labiryntu}
+      \field{year}{2016}
+      \verb{url}
+      \verb http://forbot.pl/blog/artykuly/programowanie/roboty-micromouse-5-metod-przeszukiwania-labiryntu-id17354
+      \endverb
+    \endentry
+    \entry{lired}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=df20d71ce6e38d3125eb531fbf6528bd}{Maritex}{M\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{df20d71ce6e38d3125eb531fbf6528bd}
+      \strng{fullhash}{df20d71ce6e38d3125eb531fbf6528bd}
+      \field{sortinit}{M}
+      \field{sortinithash}{2684bec41e9697b92699b46491061da2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{LIRED3B-940 Datasheet}
+      \verb{url}
+      \verb https://botland.com.pl/diody-ir-podczerwone/3974-dioda-lired3b-niebieska-940nm.html
+      \endverb
+    \endentry
+    \entry{lirt}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=df20d71ce6e38d3125eb531fbf6528bd}{Maritex}{M\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{df20d71ce6e38d3125eb531fbf6528bd}
+      \strng{fullhash}{df20d71ce6e38d3125eb531fbf6528bd}
+      \field{sortinit}{M}
+      \field{sortinithash}{2684bec41e9697b92699b46491061da2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{LIRT3B-940 Datasheet}
+      \verb{url}
+      \verb https://botland.com.pl/fototranzystory/1227-fototranzystor-lirt3b-940-940-nm.html
+      \endverb
+    \endentry
+    \entry{bellman}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=fef66c4c8bd587003f1e3509da3c3dee}{MIMUW}{M\bibinitperiod}{Wykłady}{W\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{fef66c4c8bd587003f1e3509da3c3dee}
+      \strng{fullhash}{fef66c4c8bd587003f1e3509da3c3dee}
+      \field{sortinit}{M}
+      \field{sortinithash}{2684bec41e9697b92699b46491061da2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{03}
+      \field{month}{12}
+      \field{title}{Zaawansowane algorytmy i struktury danych: Algorytm Bellmana-Forda}
+      \field{year}{2017}
+      \verb{url}
+      \verb http://wazniak.mimuw.edu.pl/index.php?title=Zaawansowane_algorytmy_i_struktury_danych/Wyk%C3%85%C2%82ad_5
+      \endverb
+    \endentry
+    \entry{yukikaze}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=9d7e9a4394ede421fce35a681edd62cf}{Nakashima}{N\bibinitperiod}{Fumitaka}{F\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{9d7e9a4394ede421fce35a681edd62cf}
+      \strng{fullhash}{9d7e9a4394ede421fce35a681edd62cf}
+      \field{sortinit}{N}
+      \field{sortinithash}{925374ca63e7594de7fafdb83e64d41d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{My micromouse}
+      \verb{url}
+      \verb http://4th-laboratory.la.coocan.jp/mymouse.html
+      \endverb
+    \endentry
+    \entry{zasady_micromouse_2}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=8ba42beded47280ab9f804393f7c01f1}{Robomatic}{R\bibinitperiod}{Koło\bibnamedelima Naukowe}{K\bibinitperiod\bibinitdelim N\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{8ba42beded47280ab9f804393f7c01f1}
+      \strng{fullhash}{8ba42beded47280ab9f804393f7c01f1}
+      \field{sortinit}{R}
+      \field{sortinithash}{c7387613477035a752d935acfc3e3ea2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Regulamin MicroMouse}
+      \verb{url}
+      \verb https://robomaticon.pl/files/pl/rules/Regulamin_MicroMouse.pdf
+      \endverb
+    \endentry
+    \entry{kinematyka}{book}{}
+      \name{author}{1}{}{%
+        {{hash=ce08442012c23d310333641f9c90a2d6}{Roland\bibnamedelima Siegwart}{R\bibinitperiod\bibinitdelim S\bibinitperiod}{Illah\bibnamedelimb Reza\bibnamedelima Nourbakhsh}{I\bibinitperiod\bibinitdelim R\bibinitperiod\bibinitdelim N\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{ce08442012c23d310333641f9c90a2d6}
+      \strng{fullhash}{ce08442012c23d310333641f9c90a2d6}
+      \field{sortinit}{R}
+      \field{sortinithash}{c7387613477035a752d935acfc3e3ea2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Introduction to Autonomous Mobile Robots}
+      \field{year}{2004}
+      \verb{doi}
+      \verb http://home.deib.polimi.it/gini/robot/docs/siegwart.pdf
+      \endverb
+    \endentry
+    \entry{sterowanie_roznicowe}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=3ffa4a71a5aa791a8bc3409f5b15b936}{Stan}{S\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{3ffa4a71a5aa791a8bc3409f5b15b936}
+      \strng{fullhash}{3ffa4a71a5aa791a8bc3409f5b15b936}
+      \field{sortinit}{S}
+      \field{sortinithash}{fd1e7c5ab79596b13dbbb67f8d70fb5a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{03}
+      \field{month}{13}
+      \field{title}{Differential steering with continuous rotation servos and arduino}
+      \field{year}{2014}
+      \verb{url}
+      \verb http://42bots.com/tutorials/differential-steering-with-continuous-rotation-servos-and-arduino/
+      \endverb
+    \endentry
+    \entry{bellmanford}{book}{}
+      \name{author}{1}{}{%
+        {{hash=0ef0ec18a0c14fc0e8f496915546a806}{Stein}{S\bibinitperiod}{Cormen\bibnamedelimb Leiserson\bibnamedelima Rivest}{C\bibinitperiod\bibinitdelim L\bibinitperiod\bibinitdelim R\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{1}{%
+        {Wydawnictwo Naukowe PWN, Warszawa}%
+      }
+      \strng{namehash}{0ef0ec18a0c14fc0e8f496915546a806}
+      \strng{fullhash}{0ef0ec18a0c14fc0e8f496915546a806}
+      \field{sortinit}{S}
+      \field{sortinithash}{fd1e7c5ab79596b13dbbb67f8d70fb5a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Wprowadzenie do algorytmów}
+      \field{year}{2012}
+    \endentry
+    \entry{stm}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=c38884ab3cf908c2798725960369391b}{STMicroelectronics}{S\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{c38884ab3cf908c2798725960369391b}
+      \strng{fullhash}{c38884ab3cf908c2798725960369391b}
+      \field{sortinit}{S}
+      \field{sortinithash}{fd1e7c5ab79596b13dbbb67f8d70fb5a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{STMF103RBT6 Datasheet}
+      \verb{url}
+      \verb www.st.com/resource/en/datasheet/CD00161566.pdf
+      \endverb
+    \endentry
+    \entry{EKF}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=67b47b5604003809144d23213de551af}{Terejanu}{T\bibinitperiod}{Gabriel\bibnamedelima A.}{G\bibinitperiod\bibinitdelim A\bibinitperiod}{}{}{}{}}%
+      }
+      \list{institution}{2}{%
+        {Department of Computer Science}%
+        {Engineering University at Buffalo}%
+      }
+      \strng{namehash}{67b47b5604003809144d23213de551af}
+      \strng{fullhash}{67b47b5604003809144d23213de551af}
+      \field{sortinit}{T}
+      \field{sortinithash}{423d138a005a533b47e6475e39378bf2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Artykuł}
+      \field{title}{Extended Kalman Filter Tutorial}
+      \verb{url}
+      \verb https://homes.cs.washington.edu/~todorov/courses/cseP590/readings/tutorialEKF.pdf
+      \endverb
+    \endentry
+    \entry{zasady_micromouse_1}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=804505f3aee29c627ba4ba039fb34278}{Turniejowej}{T\bibinitperiod}{Polska\bibnamedelimb Unia\bibnamedelima Robotyki}{P\bibinitperiod\bibinitdelim U\bibinitperiod\bibinitdelim R\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{804505f3aee29c627ba4ba039fb34278}
+      \strng{fullhash}{804505f3aee29c627ba4ba039fb34278}
+      \field{sortinit}{T}
+      \field{sortinithash}{423d138a005a533b47e6475e39378bf2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Regulamin Micromouse}
+      \verb{url}
+      \verb http://www.robomotion.rzeszow.pl/Regulaminy_PURT_micromouse.pdf
+      \endverb
+    \endentry
+    \entry{reprezentacja}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=673016e0fec218a6dfba9e54833753f7}{Wałaszek}{W\bibinitperiod}{Jerzy}{J\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{673016e0fec218a6dfba9e54833753f7}
+      \strng{fullhash}{673016e0fec218a6dfba9e54833753f7}
+      \field{sortinit}{W}
+      \field{sortinithash}{99e3ba1b3f78bb6f073e7fa7ac11636b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Artykuł}
+      \field{title}{Algorytmy i struktury danych: Reprezentacja grafów w komputerze}
+      \field{year}{2014}
+      \verb{url}
+      \verb http://eduinf.waw.pl/inf/alg/001_search/0124.php
+      \endverb
+    \endentry
+    \entry{greenye}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=664245d4d7237d57f654adcbaa534e93}{Ye}{Y\bibinitperiod}{Green}{G\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{664245d4d7237d57f654adcbaa534e93}
+      \strng{fullhash}{664245d4d7237d57f654adcbaa534e93}
+      \field{sortinit}{Y}
+      \field{sortinithash}{3cbc1e3d286284cedb5e5218a3248f94}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Green Ye's personal project site}
+      \verb{url}
+      \verb http://www.greenye.net/
+      \endverb
+    \endentry
+  \endsortlist
+\endrefsection
+\endinput
+

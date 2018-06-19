@@ -1,0 +1,121 @@
+%jezyk dokumentu
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[T1]{polski}
+\usepackage[english, polish]{babel}
+%\setlanguage{polish}
+\usepackage{fullpage}
+\usepackage{pdfpages}
+%Style
+\usepackage{siunitx,booktabs,threeparttable,caption}
+\captionsetup[table]{justification=raggedright,singlelinecheck=off}
+\sisetup{separate-uncertainty=true}
+
+\captionsetup[figure]{justification=centering,singlelinecheck=off}
+\sisetup{separate-uncertainty=true}
+
+\setlength\parindent{0.5cm}
+\renewcommand{\baselinestretch}{1.15} 
+\makeatletter
+\def\ps@myPS{%
+    \def\@oddfoot{\null\hfill\thepage}
+    \def\@evenfoot{\thepage}%
+    \def\@evenhead{\null\hfil\slshape\leftmark}%
+    \def\@oddhead{{\slshape\rightmark}}}%
+\makeatother
+\makeatletter
+\renewcommand\chapter{\if@openright\cleardoublepage\else\clearpage\fi
+                    \thispagestyle{myPS}%
+                    \global\@topnum\z@
+                    \@afterindentfalse
+                    \secdef\@chapter\@schapter}
+\makeatother
+\pagestyle{myPS}
+%linkowanie
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{subcaption}
+%math
+\usepackage{amsmath}
+\usepackage{gensymb}
+\def\deg {$^o$\ }
+\newcommand{\mat}[1]{\mathbf{#1}} % undergraduate algebra version
+\newcommand{\sub}[1]{\footnotesize #1 \normalsize}
+%bibliografia
+\usepackage{csquotes}
+\usepackage[backend=biber]{biblatex}
+%,style=authoryear
+%\renewcommand{\cite}[1]{\parencite{#1}}
+\usepackage{float}
+%numeracja
+\usepackage{chngcntr}
+%\counterwithout{figure}{chapter}	%numeracja ciagła
+%oblsuga grafiki
+\usepackage{graphicx}
+\graphicspath{{../img/}{}../image/}
+%time and date management
+\usepackage{datetime}
+\newcommand{\miesiac}{%
+  \ifcase\THEMONTH
+  \or Styczeń% 1
+  \or Luty% 2
+  \or Marzec% 3
+  \or Kwiecień% 4
+  \or Maj% 5
+  \or Czerwiec% 6
+  \or Lipiec% 7
+  \or Sierpień% 8
+  \or Wrzesień% 9
+  \or Październik% 10
+  \or Listopad% 11
+  \or Grudzień% 12
+  \fi}
+\newdateformat{mmyyyy}{\miesiac \  \THEYEAR}
+
+%zarzadzanie tekstem
+\brokenpenalty=1000		% nie dziel wyrazów miedzy stronami
+\clubpenalty=1000		% kara za sierotki
+\widowpenalty=10000		% nie pozostawiaj wdów
+
+\usepackage[inner=30mm,outer=20mm,top=25mm,bottom=25mm]{geometry}
+
+%Wyliczenia:
+\usepackage{enumerate}
+%Fragmenty kodu:
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=C,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\usepackage{xr}
+\usepackage{amsfonts}
+\defbibheading{myheading}[Bibliografia]{%
+  \chapter*{#1}
+  \addcontentsline{toc}{chapter}{#1}}

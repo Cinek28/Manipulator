@@ -1,0 +1,19 @@
+\externaldocument{CH_Wstep}
+\externaldocument{CH_Opis_konstrukcji}
+\externaldocument{CH_Model}
+\externaldocument{CH_EKF}
+\externaldocument{CH_Algorytm}
+\externaldocument{CH_Wnioski}
+
+\begin{center}
+\textbf{Streszczenie}
+\end{center}
+\paragraph{Implementacja algorytmu Bellmana- Forda do przeszukiwania labiryntu przez robota typu Micromouse}
+\paragraph{}
+Celem pracy było rozwiązanie problemu znajdowania najkrótszej drogi do~środka labiryntu opisanego w regulaminie konkurencji Micromouse oraz implementacja wybranego algorytmu w robocie mobilnym. W dokumencie zawarto opis kolejnych etapów projektu, a także przedstawiono analizę jakości wdrożonego rozwiązania.
+Pierwszy rozdział poświęcony został przedstawieniu wymagań stawianym w konkurencji Micromouse (rozdział 1). Na ich podstawie powstała konstrukcja mechaniczna i elektroniczna robota mobilnego użytego w projekcie (rozdział 2). Następnym krokiem było wyprowadzenie modelu matematycznego kinematyki robota o napędzie różnicowym (rozdział 3), który stanowi podstawę przyjętej metody lokalizacji. Równania te wykorzystywane są do obliczania położenia na podstawie uprzednio wyliczonej pozycji oraz pomiarów z zastosowanych w konstrukcji czujników. W celu lokalizacji zastosowano algorytm SLAM wykorzystujący rozszerzony filtr Kalmana (rozdział 4). Filtr ten bardzo dobrze radzi sobie z estymacją procesów nieliniowych, a także daje możliwość zbierania parametrów pomiarowych z różnych czujników. Następnie, poprzez fuzję tych danych, uzyskiwana jest optymalna informacja o stanie procesu. Opisana metoda pozwala na wyznaczenie, w której części labiryntu znajduje się robot. W ten sposób możliwe jest utworzenie mapy, która wykorzystywana jest w rozwiązaniu problemu najkrótszej ścieżki poprzez algorytm Bellmana-Forda (rozdział 5). W ostatnim etapie pracy przeprowadzono doświadczenia mające na celu sprawdzenie poprawności użytych metod. Na podstawie uzyskanych wyników możliwa była ocena jakości wykonanego projektu oraz wskazanie modyfikacji możliwych do wdrożenia w przyszłości (rozdział 6).
+
+\vspace*{\baselineskip}
+
+\noindent\textbf{Słowa kluczowe:} \textit{Micromouse, robot mobilny, algorytm Bellmana-Forda, problem najkrótszej ścieżki, rozszerzony filtr Kalmana, lokalizacja}
+
