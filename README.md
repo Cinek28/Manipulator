@@ -1,7 +1,7 @@
 # Manipulator
 Repository designated for master's degree thesis development on manipulator's control problems. The thesis is conducted on real-life model of 6 DOF manipulator designated to work on Mars rover platform:
 
-![alt text](https://github.com/Cinek28/Manipulator/Model/Manipulator_task.jpg "Manipulator working in designated environment on URC2018 competition.")
+![alt text](https://github.com/Cinek28/Manipulator/blob/master/Model/Manipulator_task.JPG "Manipulator working in designated environment on URC2018 competition.")
 
 List of folders:
 1. Application: Contains project files of desktop app for controlling manipulator using UART connection.
