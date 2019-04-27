@@ -1,0 +1,9 @@
+<launch>
+
+    <arg name="gui" default="True" />
+    <param name="use_gui" value="$(arg gui)" />
+
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
+    <node name="kdl_dkin" pkg="manipulator" type="kdl_dkin" output="screen"></node>
+
+</launch>
