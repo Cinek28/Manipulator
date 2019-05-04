@@ -1,1 +1,0 @@
-controller_joint_names: ['shoulder_rotation', 'forearm_rotation', 'arm_rotation', 'wrist_rotation', 'wrist_pitch', 'gripper_rotation', ]

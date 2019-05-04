@@ -1,0 +1,39 @@
+manipulator:
+  controller_joint_names: ['shoulder_rotation', 'forearm_rotation', 'arm_rotation', 'wrist_rotation', 'wrist_pitch', 'gripper_rotation', ]
+
+# Joint states controller settings
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+
+# Joint velocities controllers settings
+  shoulder_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: shoulder_rotation
+    pid: {p: 1000.0, i: 10.0, d: 100.0}
+
+  forearm_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: forearm_rotation
+    pid: {p: 1000.0, i: 100.0, d: 100.0}
+
+  arm_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: arm_rotation
+    pid: {p: 1000.0, i: 5.0, d: 100.0}
+
+  wrist_rot_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: wrist_rotation
+    pid: {p: 1000, i: 50.0, d: 0.01}
+
+  wrist_pitch_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: wrist_pitch
+    pid: {p: 500.0, i: 5.0, d: 0.01}
+
+  gripper_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: gripper_rotation
+    pid: {p: 800.0, i: 50.0, d: 0.01}

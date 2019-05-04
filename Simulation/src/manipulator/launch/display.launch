@@ -9,15 +9,15 @@
   <!-- joint 3 limits params -->
   <param name="joint3/limit/lower" type="double" value="-2.5" />
   <param name="joint3/limit/upper" type="double" value="0" />
-    <!-- joint 4 limits params -->
-    <param name="joint4/limit/lower" type="double" value="-3.14" />
-    <param name="joint4/limit/upper" type="double" value="3.14" />
-    <!-- joint 5 limits params -->
-    <param name="joint5/limit/lower" type="double" value="0" />
-    <param name="joint5/limit/upper" type="double" value="3.14" />
-    <!-- joint 6 limits params -->
-    <param name="joint6/limit/lower" type="double" value="-3.14" />
-    <param name="joint6/limit/upper" type="double" value="3.14" />
+  <!-- joint 4 limits params -->
+  <param name="joint4/limit/lower" type="double" value="-3.14" />
+  <param name="joint4/limit/upper" type="double" value="3.14" />
+  <!-- joint 5 limits params -->
+  <param name="joint5/limit/lower" type="double" value="0" />
+  <param name="joint5/limit/upper" type="double" value="3.14" />
+  <!-- joint 6 limits params -->
+  <param name="joint6/limit/lower" type="double" value="-3.14" />
+  <param name="joint6/limit/upper" type="double" value="3.14" />
 
   <arg name="model" />
   <arg name="gui" default="True" />
@@ -26,7 +26,7 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find manipulator)/urdf/urdf.rviz -f base_link" />
 
-  <node name="kdl_dkin" pkg="manipulator" type="kdl_dkin" output="screen"></node>
+  <!--<node name="kdl_dkin" pkg="manipulator" type="kdl_dkin" output="screen"></node>-->
 
   <!--<param name="use_gui" value="$(arg gui)" />-->
 

@@ -1,0 +1,7 @@
+.settings/
+*.elf
+*.launch
+Debug/
+*.project
+.cproject
+

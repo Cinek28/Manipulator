@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(manipulator)
 
 find_package(catkin REQUIRED cmake_modules COMPONENTS
+		controller_manager
+		joint_state_controller
+		robot_state_publisher
 		roscpp
 		rospy
 		sensor_msgs
