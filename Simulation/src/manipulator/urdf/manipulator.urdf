@@ -74,18 +74,18 @@
     <limit
       lower="-3.14"
       upper="3.14"
-      effort="20"
+      effort="50"
       velocity="8.3776" />
   </joint>
 
   <transmission name="shoulder_rotation_transmission">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="shoulder_rotation">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="shoulder_rotation_motor">
       <mechanicalReduction>1.5</mechanicalReduction>
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
     </actuator>
   </transmission>
 
@@ -134,15 +134,15 @@
   <transmission name="forearm_rotation_transmission">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="forearm_rotation">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="forearm_rotation_motor">
         <mechanicalReduction>157</mechanicalReduction>
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </actuator>
    </transmission>
 
-    <link name="arm_link">
+  <link name="arm_link">
     <inertial>
       <origin xyz="0.1767 0.0069722 5.0223E-06" rpy="0 0 0" />
       <mass value="1.1195" />
@@ -187,11 +187,11 @@
   <transmission name="arm_rotation_transmission">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="arm_rotation">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="arm_rotation_motor">
         <mechanicalReduction>1</mechanicalReduction>
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </actuator>
    </transmission>
 
@@ -239,11 +239,11 @@
  <transmission name="wrist_rotation_transmission">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="wrist_rotation">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="wrist_rotation_motor">
         <mechanicalReduction>1</mechanicalReduction>
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </actuator>
   </transmission>
 
@@ -337,10 +337,10 @@
       <type>transmission_interface/SimpleTransmission</type>
       <actuator name="wrist_pitch_motor">
         <mechanicalReduction>1.2</mechanicalReduction>
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </actuator>
       <joint name="wrist_pitch">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
   </transmission>
 
@@ -348,12 +348,12 @@
         <type>transmission_interface/SimpleTransmission</type>
         <actuator name="gripper_rotation_motor">
           <mechanicalReduction>1.2</mechanicalReduction>
-          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </actuator>
         <joint name="gripper_rotation">
-          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </joint>
-    </transmission>
+  </transmission>
 
 
   <!-- Gazebo definitions -->
@@ -367,7 +367,7 @@
       <material>Gazebo/White</material>
       <gravity>true</gravity>
       <kp>1000000.0</kp>
-            <kd>100.0</kd>
+      <kd>100.0</kd>
       <mu1>30.0</mu1>
       <mu2>30.0</mu2>
       <maxVel>1.0</maxVel>
