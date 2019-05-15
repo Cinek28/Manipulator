@@ -33,7 +33,6 @@ public:
 			Logger::writeGuard.lock();
 			std::cout << outStream.str();
 			Logger::writeGuard.unlock();
-			outStream.str("");
 		}
 	};
 
@@ -48,9 +47,9 @@ public:
 			messageLevel = level;
 		else
 			messageLevel = Level::INFO;
-		outStream << toString(messageLevel) << " |" << __FILE__
-		<< "| " << __FUNCTION__ << "[" << std::to_string(__LINE__) 
-		<< "]:" << "\t";
+		outStream << toString(messageLevel) << " |" 
+		<< __FILE__ << "| " << __FUNCTION__ << "[" 
+		<< __LINE__ << "]:" << "\t";
 		return outStream;
 	} 
 
@@ -87,16 +86,20 @@ std::mutex Logger::writeGuard;
 #define _LOG(level) \
 	if(level > Logger::logLevel()) ; \
 	else Logger().getStream(level)
+
+Logger::Level Logger::loggingLevel = Logger::DEBUG;
 #else
 #define _LOG(...) \
 	if(true) ; \
-	else Logger().getStream(level)
+	else Logger().getStream(Logger::NONE)
+
+Logger::Level Logger::loggingLevel = Logger::NONE;
 #endif
 
-#define _INFO _LOG(Logger::DEBUG)
+#define _INFO _LOG(Logger::INFO)
 #define _DBG _LOG(Logger::DEBUG)
-#define _WARN _LOG(Logger::DEBUG)
-#define _ERR _LOG(Logger::DEBUG)
+#define _WARN _LOG(Logger::WARNING)
+#define _ERR _LOG(Logger::ERROR)
 
 
 #endif /* LOGGER_H_ */
