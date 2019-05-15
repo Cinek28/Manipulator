@@ -10,84 +10,93 @@
 
 #include <iostream>
 #include <sstream>
-#include <stdio.h>
 #include <mutex>
-
-#ifdef ENABLE_LOG
-#define LOG(level) \
-	if(level >= Logger::LogLevel()) ; \
-	else Logger::getInstance(level)
-#else
-#define LOG(...)
-#endif
-
 
 class Logger {
 public:
-
-	enum Level
+	typedef enum
 	{
-		ERROR = 0,
+		NONE = 0,
+		ERROR,
 		WARNING,
 		DEBUG,
-		INFO,
-		NONE
-	};
+		INFO
+	} Level;
 
-	virtual ~Logger(){};
+	Logger(){};
 
-	static Logger& getInstance(const Level& level = INFO)
+	virtual ~Logger()
 	{
-		static Logger instance;
-		messageLevel = level;
-		return instance;
-	};
-
-	static Level& LogLevel();
-
-	Logger& operator<<(const std::string& sMessage)
-	{
-		if(messageLevel >= LogLevel())
+		if(messageLevel <= Logger::logLevel())
 		{
-			writeGuard.lock();
-			outStream << "\n" << toString(messageLevel) <<  __FILE__ << "|" << __FUNCTION__
-					  << "|" << __LINE__ << "|" << "\t";
-			outStream << sMessage;
-
-			std::cerr << outStream.str();
+			outStream << "\n"; 
+			Logger::writeGuard.lock();
+			std::cout << outStream.str();
+			Logger::writeGuard.unlock();
 			outStream.str("");
-			writeGuard.unlock();
 		}
-		return *this;
+	};
+
+	static const Level& logLevel()
+	{
+		return loggingLevel;
 	}
 
+	std::ostringstream& getStream(const Level& level)
+	{
+		if(level != Level::NONE)
+			messageLevel = level;
+		else
+			messageLevel = Level::INFO;
+		outStream << toString(messageLevel) << " |" << __FILE__
+		<< "| " << __FUNCTION__ << "[" << std::to_string(__LINE__) 
+		<< "]:" << "\t";
+		return outStream;
+	} 
 
-protected:
-	Logger();
-	Logger(const Logger&) = delete;
-	Logger& operator=(const Logger&) = delete;
-
-	static const string& toString(const Level& level)
+	static const std::string toString(const Level& level)
 	{
 		switch(level)
 		{
 			case INFO:
-				return "<INFO>";
+				return "[INFO]";
 			case DEBUG:
-				return "<DEBUG>";
+				return "[DEBUG]";
 			case WARNING:
-				return "<WARN>";
+				return "[WARN]";
 			case ERROR:
-				return "<ERROR>";
+				return "[ERROR]";
 			default:
 				return "";
 		}
 	}
 
+protected:
+	Logger(const Logger&) = delete;
+	Logger& operator=(const Logger&) = delete;
+
 	std::ostringstream outStream;
-	static Level messageLevel;
-	std::mutex writeGuard;
+	Level messageLevel;
+	static Level loggingLevel;
+	static std::mutex writeGuard;
 };
+
+std::mutex Logger::writeGuard;
+
+#ifdef ENABLE_LOG
+#define _LOG(level) \
+	if(level > Logger::logLevel()) ; \
+	else Logger().getStream(level)
+#else
+#define _LOG(...) \
+	if(true) ; \
+	else Logger().getStream(level)
+#endif
+
+#define _INFO _LOG(Logger::DEBUG)
+#define _DBG _LOG(Logger::DEBUG)
+#define _WARN _LOG(Logger::DEBUG)
+#define _ERR _LOG(Logger::DEBUG)
 
 
 #endif /* LOGGER_H_ */
