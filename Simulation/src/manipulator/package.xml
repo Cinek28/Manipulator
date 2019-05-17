@@ -10,33 +10,29 @@ for manipulator robot</p>
   <maintainer email="marcinb280@op.pl" />
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_modules</build_depend>
   <build_depend>roslaunch</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>tf2</build_depend>
-  <build_depend>cmake_modules</build_depend>
-  <build_depend>eigen</build_depend>
-  <build_depend>controller_manager</build_depend>
-  <build_depend>joint_state_controller</build_depend>
-  <build_depend>robot_state_publisher</build_depend>
+
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>controller_manager</run_depend>
   <run_depend>joint_state_controller</run_depend>
-  <run_depend>rviz</run_depend>
   <run_depend>joint_state_publisher</run_depend>
+  <run_depend>joint_limits_interface</run_depend>
+  <run_depend>rviz</run_depend>
   <run_depend>gazebo</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>tf2</run_depend>
-  <run_depend>eigen</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>spacenav_node</run_depend>
   <export>
     <architecture_independent />
   </export>

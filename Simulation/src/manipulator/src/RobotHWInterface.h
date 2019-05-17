@@ -1,7 +1,7 @@
 #ifndef MANIPULATOR_HW
 #define MANIPULATOR_HW
 
-#include "RobotHWBase.h"
+#include "RobotHWInterfaceBase.h"
 
 using namespace hardware_interface;
 using joint_limits_interface::JointLimits;
@@ -12,11 +12,11 @@ using joint_limits_interface::SoftJointLimits;
 static const double POSITION_STEP_FACTOR = 10;
 static const double VELOCITY_STEP_FACTOR = 10;
 
-class RobotHW : public RobotHWBase
+class RobotHWInterface : public RobotHWInterfaceBase
 {
 public:
-    RobotHW(ros::NodeHandle &nh);
-    ~RobotHW();
+    RobotHWInterface(ros::NodeHandle &nh);
+    ~RobotHWInterface();
     void init();
     void update(const ros::TimerEvent &e);
     void read();

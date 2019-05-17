@@ -6,6 +6,7 @@ find_package(catkin REQUIRED cmake_modules COMPONENTS
 		controller_manager
 		joint_state_controller
 		robot_state_publisher
+		joint_limits_interface
 		roscpp
 		rospy
 		sensor_msgs
@@ -41,3 +42,5 @@ endforeach(dir)
 
 add_executable(kdl_dkin src/kdl_dkin.cpp)
 target_link_libraries(kdl_dkin ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} )
+add_executable(RobotHWInterfaceNode src/RobotHWInterfaceNode.cpp src/RobotHWInterface.cpp)
+target_link_libraries(RobotHWInterfaceNode ${catkin_LIBRARIES} )

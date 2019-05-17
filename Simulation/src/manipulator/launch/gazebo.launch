@@ -1,43 +1,55 @@
 <launch>
+
     <arg name="robot_description" default="$(find manipulator)/urdf/manipulator.urdf"/>
     <param name="/robot_description" textfile="$(find manipulator)/urdf/manipulator.urdf" />
+    
+    <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+    
+    <node name="tf_footprint_base"
+        pkg="tf"
+        type="static_transform_publisher"
+        required="true"
+        args="0 0 0 0 0 0 base_link base_footprint 40"/>
 
-    <!--<group ns="manipulator">-->
-        <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+    <node name="spawn_model"
+        pkg="gazebo_ros"
+        type="spawn_model"
+        args="-urdf -param /robot_description -model manipulator"
+        output="screen"/>
 
-        <node
-                name="tf_footprint_base"
-                pkg="tf"
-                type="static_transform_publisher"
-                args="0 0 0 0 0 0 base_link base_footprint 40"/>
-        <node
-                name="spawn_model"
-                pkg="gazebo_ros"
-                type="spawn_model"
-                args="-urdf -param /robot_description -model manipulator"
-                output="screen"/>
-        <node
-                name="fake_joint_calibration"
-                pkg="rostopic"
-                type="rostopic"
-                args="pub /calibrated std_msgs/Bool true"/>
+    <!-- <node name="fake_joint_calibration"
+        pkg="rostopic"
+        type="rostopic"
+        args="pub /calibrated std_msgs/Bool true"/> -->
 
+    <!-- Load joint controller and hardware interface configurations from YAML file to parameter server -->
+    <rosparam file="$(find manipulator)/config/controllers_velocity.yaml" command="load"/>
+    <rosparam file="$(find manipulator)/config/hardware.yaml" command="load"/>
 
-        <!-- Load joint controller and hardware interface configurations from YAML file to parameter server -->
-        <rosparam file="$(find manipulator)/config/controllers_velocity.yaml" command="load"/>
-        <rosparam file="$(find manipulator)/config/hardware.yaml" command="load"/>
-
-        <!--load the controllers -->
-        <node name="controller_spawner"
-              pkg="controller_manager"
-              type="spawner"
-              respawn="false"
-              output="screen"
-              ns="/manipulator"
-              args="shoulder_position_controller forearm_position_controller arm_position_controller
+    <!-- Load the controllers -->
+    <node name="controller_spawner"
+        pkg="controller_manager"
+        type="spawner"
+        respawn="false"
+        output="screen"
+        ns="/manipulator"
+        required="true"
+        args="shoulder_position_controller forearm_position_controller arm_position_controller
         wrist_rot_position_controller wrist_pitch_position_controller gripper_position_controller
         joint_state_controller --timeout 30"/>
 
-    <!--</group>-->
+    <!-- Load robot hardware interface-->
+    <node name="RobotHWInterface"
+        pkg="manipulator"
+        type="RobotHWInterfaceNode"
+        required="false"/>
+
+    <!-- Load robot hardware interface-->
+    <node name="spacenav_node" pkg="spacenav_node" type="spacenav_node"
+        output="screen" required="false">
+        
+        <param name="zero_when_static" value="true"/>
+        <param name="static_count_threshold" value="30"/>
+    </node>
 
 </launch>
