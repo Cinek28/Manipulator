@@ -1,4 +1,4 @@
 *.stl
 *.idea
 *.catkin-workspace
-
+*.vscode

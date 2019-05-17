@@ -23,8 +23,9 @@
                 args="pub /calibrated std_msgs/Bool true"/>
 
 
-        <!-- Load joint controller configurations from YAML file to parameter server -->
+        <!-- Load joint controller and hardware interface configurations from YAML file to parameter server -->
         <rosparam file="$(find manipulator)/config/controllers_velocity.yaml" command="load"/>
+        <rosparam file="$(find manipulator)/config/hardware.yaml" command="load"/>
 
         <!--load the controllers -->
         <node name="controller_spawner"

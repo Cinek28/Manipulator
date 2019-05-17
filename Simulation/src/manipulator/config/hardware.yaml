@@ -1,0 +1,4 @@
+manipulator:
+  hardware_interface:
+     rate: 50 # hz
+     joints: ['shoulder_rotation', 'forearm_rotation', 'arm_rotation', 'wrist_rotation', 'wrist_pitch', 'gripper_rotation']
