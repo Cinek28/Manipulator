@@ -3,5 +3,5 @@
 *.launch
 Debug/
 *.project
-.cproject
+*.cproject
 
