@@ -8,7 +8,7 @@
  *
  *	UART is set to half-duplex mode.
  *
- *	Library written using HAL libraries for STM microcontrollers.
+ *	Library written using STDPeriph libraries for STM microcontrollers.
  *
  */
 
