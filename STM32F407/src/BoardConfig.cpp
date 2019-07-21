@@ -1,42 +1,12 @@
 /*
- * BoardConfig.h
+ * BoardConfig.cpp
  *
- *  Created on: Jul 16, 2019
- *      Author: mrbr
+ *  Created on: 21.07.2019
+ *      Author: Cinek
  */
 
-#ifndef BOARDCONFIG_H
-#define BOARDCONFIG_H
+#include "BoardConfig.h"
 
-#include "EncoderConfig.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_tim.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_usart.h"
-
-#include "dxl_rx64.h"
-#include "CAN.h"
-
-#define TIMEOUT 200 //in ms
-#define SYSTICK_FREQ 100000000
-#define TIMEOUT_CNT SYSTICK_FREQ*TIMEOUT/(1000)
-#define BAUDRATE 1000000
-/* Private variables */
-volatile long keyTimeout = 0;
-
-volatile int16_t baseSpeed = 0;
-volatile int16_t forearmSpeed = 0;
-volatile int16_t armSpeed = 0;
-volatile int16_t wristRotateSpeed = 0;
-volatile float wristPitchSpeed = 0;
-volatile float wristRollSpeed = 0;
-volatile int16_t gripperSpeed = 0;
-volatile float angle1 = 150;
-volatile float angle2 = 150;
-
-
-// Clock configuration and initialization:
 void RCC_CONF()
 {
 	// Setting HSE with 8MHz external oscillator as main clock:
@@ -240,12 +210,12 @@ void USART2_CONF()
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
-static void dxl_uart_init(USART_TypeDef* USART, uint32_t baudrate)
+void dxl_uart_init(USART_TypeDef* USART, uint32_t baudrate)
 {
 	USART_InitTypeDef USART_Init_Structure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	clearServoReceiveBuffer();
+//	clearServoReceiveBuffer();
 
 	USART_Init_Structure.USART_BaudRate = baudrate;
 	USART_Init_Structure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
@@ -294,7 +264,6 @@ static void dxl_uart_init(USART_TypeDef* USART, uint32_t baudrate)
 
 	USART_HalfDuplexCmd(USART, ENABLE);
 	USART_Cmd (USART, ENABLE);
-	DYNAMIXEL_USART = USART;
 }
 
 void USART1_CONF()
@@ -362,4 +331,6 @@ void TIM_PWM_CONF(){
 	TIM_Cmd(TIM2, ENABLE);
 };
 
-#endif /* BOARDCONFIG_H */
+
+
+

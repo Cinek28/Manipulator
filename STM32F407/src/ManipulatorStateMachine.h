@@ -8,20 +8,17 @@
 #ifndef SRC_MANIPULATORSTATEMACHINE_H_
 #define SRC_MANIPULATORSTATEMACHINE_H_
 
-#include <vector>
-#include <memory>
+//#include "Utils/StateMachine.h"
 
-#include "Utils/StateMachine.h"
-
-#include "Motor/PWMMotor.h"
-#include "Motor/HighPowerMotor.h"
-#include "Motor/ServoMotor.h"
+#include "PWMMotor.h"
+#include "HighPowerMotor.h"
+#include "ServoMotor.h"
 
 #include "BoardConfig.h"
 
 #define NUM_JOINTS 6
 
-class ManipulatorStateMachine: public StateMachine
+class ManipulatorStateMachine
 {
 public:
 	ManipulatorStateMachine();
@@ -29,13 +26,19 @@ public:
 
 	const uint8_t init();
 
-	void setJointsVel(const std::vector<double>& velocities);
+	void setJointsVel(const double* velocities);
 
 	void closeGripper(const double& velocity);
-	void openGripper(const double& velocity)
+	void openGripper(const double& velocity);
 
 private:
-	std::vector<std::unique_ptr<Motor>> joints[NUM_JOINTS];
+	Motor* joints[NUM_JOINTS];
+	PWMMotor shoulder;
+	HighPowerMotor forearm;
+	PWMMotor arm;
+	PWMMotor wristRotation;
+	ServoMotor wristPitch;
+	ServoMotor gripperRotation;
 	PWMMotor gripper;
 };
 

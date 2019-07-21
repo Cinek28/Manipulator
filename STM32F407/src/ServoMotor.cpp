@@ -1,0 +1,54 @@
+/*
+ * ServoMotor.cpp
+ *
+ *  Created on: Jul 16, 2019
+ *      Author: mrbr
+ */
+
+#include "ServoMotor.h"
+
+void ServoMotor::init(uint8_t id)
+{
+	servoID = id;
+	setServoDiode(servoID, 0x01);
+	setServoTorque(servoID, 1023);
+	enableTorque(servoID, 0x01);
+}
+
+void ServoMotor::setVelocity(const double& velocity)
+{
+	double vel = velocity * ratio;
+	if(vel > MAX_VELOCITY)
+		vel = MAX_VELOCITY;
+	else if(vel < -MAX_VELOCITY)
+		vel = - MAX_VELOCITY;
+
+	int16_t vel_cmd = (vel/MAX_VELOCITY*1023);
+
+	if(vel_cmd > 0)
+		vel_cmd += 1023;
+	else
+		vel_cmd = -1*vel;
+
+	setServoSpeed((uint8_t)servoID, (uint8_t)(vel_cmd >> 8), (uint8_t)(vel_cmd));
+}
+
+const double ServoMotor::getVelocity() const
+{
+	return 0 ; //TODO
+}
+
+void ServoMotor::setCurrentMode(const ServoMotor::MODE& mode)
+{
+
+}
+
+void ServoMotor::setLed(bool isOn)
+{
+	if(isOn)
+		setServoDiode(servoID, 0x01);
+	else
+		setServoDiode(servoID, 0x00);
+}
+
+

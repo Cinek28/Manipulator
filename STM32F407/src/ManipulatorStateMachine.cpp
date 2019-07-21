@@ -6,18 +6,23 @@
  */
 
 #include "ManipulatorStateMachine.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_tim.h"
 
 ManipulatorStateMachine::ManipulatorStateMachine()
 {
-	joints[0].reset(new PWMMotor(TIM2->CCR1, TIM5->CNT, GPIOD, GPIO_Pin_0, GPIO_Pin_1));
-	joints[1].reset(new HighPowerMotor(TIM2->CCR1, TIM5->CNT, GPIOD, GPIO_Pin_0, GPIO_Pin_1));
-	joints[2].reset(new PWMMotor(TIM2->CCR2, TIM1->CNT, GPIOD, GPIO_Pin_4, GPIO_Pin_7));
-	joints[3].reset(new PWMMotor(TIM4->CCR4, TIM8->CNT, GPIOE, GPIO_Pin_0, GPIO_Pin_4));
-	joints[4].reset(new ServoMotor(1));
-	joints[5].reset(new ServoMotor(2));
-	gripper = PWMMotor(TIM4->CCR3, TIM5->CNT, GPIOE, GPIO_Pin_2, GPIO_Pin_3);
+	joints[0] = &shoulder;
+	joints[1] = &forearm;
+	joints[2] = &arm;
+	joints[3] = &wristRotation;
+	joints[4] = &wristPitch;
+	joints[5] = &gripperRotation;
+
+	shoulder.init(&TIM2->CCR1, &TIM5->CNT, GPIOD, GPIO_Pin_0, GPIO_Pin_1);
+	forearm.init(&TIM2->CCR3, &TIM2->CCR4, &TIM3->CNT);
+	arm.init(&TIM2->CCR2, &TIM1->CNT, GPIOD, GPIO_Pin_4, GPIO_Pin_7);
+	wristRotation.init(&TIM4->CCR4, &TIM8->CNT, GPIOE, GPIO_Pin_0, GPIO_Pin_4);
+	wristPitch.init(1);
+	gripperRotation.init(2);
+	gripper.init(&TIM4->CCR3, &TIM5->CNT, GPIOE, GPIO_Pin_2, GPIO_Pin_3);
 }
 
 const uint8_t ManipulatorStateMachine::init()
@@ -30,7 +35,7 @@ const uint8_t ManipulatorStateMachine::init()
 	return 0;
 }
 
-void ManipulatorStateMachine::setJointsVel(const std::vector<double>& velocities)
+void ManipulatorStateMachine::setJointsVel(const double* velocities)
 {
 	for(int i = 0; i < NUM_JOINTS; ++i)
 	{
