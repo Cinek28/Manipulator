@@ -4,4 +4,4 @@
 Debug/
 *.project
 *.cproject
-
+*.autotools
