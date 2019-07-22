@@ -215,7 +215,7 @@ bool setServoTorque (const uint8_t servoId,
 //    if (!getAndCheckResponse (servoId))
 //        return false;
 //
-//    return true;
+    return true;
 }
 
 bool getServoTorque (const uint8_t servoId,
@@ -318,7 +318,7 @@ bool setServoAngle (const uint8_t servoId,
 //    if (!getAndCheckResponse (servoId))
 //        return false;
 //
-//    return true;
+    return true;
 }
 
 bool getServoAngle (const uint8_t servoId,
@@ -363,5 +363,3 @@ void setServoSpeed(uint8_t servoID, uint8_t higherByte, uint8_t lowerByte){
 	uint8_t params[3] = {0x20,lowerByte, higherByte};
 	sendServoCommand(servoID, WRITE, 0x03, params);
 }
-
-

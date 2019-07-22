@@ -31,6 +31,7 @@ const uint8_t ManipulatorStateMachine::init()
 	GPIO_MOTOR_CONF();
 	TIM_PWM_CONF();
 	USART1_CONF();
+	USART1_DXL_CONF(BAUDRATE);
 	USART2_CONF();
 	return 0;
 }

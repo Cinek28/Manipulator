@@ -9,8 +9,8 @@
 
 PWMMotor::PWMMotor(volatile uint32_t * pwm_channel,
 		volatile uint32_t * encoder_cnt,
-		GPIO_TypeDef * port, uint16_t& pin_1,
-		uint16_t& pin_2)
+		GPIO_TypeDef * port, uint16_t pin_1,
+		uint16_t pin_2)
 {
 	pwmChannel = pwm_channel;
 	encoderCnt = encoder_cnt;
@@ -21,8 +21,8 @@ PWMMotor::PWMMotor(volatile uint32_t * pwm_channel,
 
 void PWMMotor::init(volatile uint32_t * pwm_channel,
 		volatile uint32_t * encoder_cnt,
-		GPIO_TypeDef * port, uint16_t& pin_1,
-		uint16_t& pin_2)
+		GPIO_TypeDef * port, uint16_t pin_1,
+		uint16_t pin_2)
 {
 	pwmChannel = pwm_channel;
 	encoderCnt = encoder_cnt;

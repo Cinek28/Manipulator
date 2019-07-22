@@ -23,11 +23,11 @@ public:
 		WHEEL_MODE
 	};
 
-	ServoMotor():servoID(0){};
+	ServoMotor(){};
 	ServoMotor(const uint8_t& servo_id):servoID(servo_id){};
 	virtual ~ServoMotor(){};
 
-	void init(uint8_t id);
+	void init(const uint8_t& servo_id);
 
 	virtual void setVelocity(const double& velocity);
 	void setCurrentMode(const MODE& mode);

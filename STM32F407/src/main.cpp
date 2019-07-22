@@ -28,11 +28,10 @@ SOFTWARE.
 
 /* Includes */
 
-#include "BoardConfig.h"
-//#include "Motor.h"
+#include "ManipulatorStateMachine.h"
 
-//Motor motor;
-//ManipulatorStateMachine manipulator;
+ManipulatorStateMachine manipulator;
+double vels[6] = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0};
 
 void send_char(char, USART_TypeDef*);
 /**
@@ -48,20 +47,8 @@ void sendStartStop(char isOn);
 int main(void)
 {
 //	manipulator.init();
-	RCC_CONF();
-	GPIO_MOTOR_CONF();
-	TIM_PWM_CONF();
-	USART1_CONF();
-	USART2_CONF();
-//	motor.init(&TIM2->CCR1, &TIM5->CNT, GPIOD, GPIO_Pin_0, GPIO_Pin_1);
-//	motor.initPID(1000, 10, 1);
-//	motor.setRatio(1.0);
-//	motor.setVelocity(1000.0);
-	GPIO_SetBits(GPIOD, GPIO_Pin_0);
-	TIM2->CCR1 = 1000;
-	GPIO_SetBits(GPIOB, GPIO_Pin_2);
-//	double velocities[6] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-//	manipulator.setJointsVel(velocities);
+	manipulator.init();
+	manipulator.setJointsVel(vels);
 
 //  uint8_t params[5] = {0x06, 0x00, 0x00, 0xFF, 0x03};
 //  setServoDiode(0x01, 0x01);

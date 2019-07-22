@@ -7,8 +7,9 @@
 
 #include "ServoMotor.h"
 
-void ServoMotor::init()
+void ServoMotor::init(const uint8_t& servo_id)
 {
+	servoID = servo_id;
 	setServoDiode(servoID, 0x01);
 	setServoTorque(servoID, 1023);
 	enableTorque(servoID, 0x01);

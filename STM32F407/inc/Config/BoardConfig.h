@@ -22,12 +22,19 @@
 #define BAUDRATE 1000000
 /* Private variables */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 // Clock configuration and initialization:
 void RCC_CONF();
 void GPIO_MOTOR_CONF();
 void USART2_CONF();
-void dxl_uart_init(USART_TypeDef* USART, uint32_t baudrate);
+void USART1_DXL_CONF(uint32_t baudrate);
 void USART1_CONF();
 void TIM_PWM_CONF();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BOARDCONFIG_H */

@@ -1,5 +1,5 @@
 /*
- * BoardConfig.cpp
+ * BoardConfig.c
  *
  *  Created on: 21.07.2019
  *      Author: Cinek
@@ -210,12 +210,12 @@ void USART2_CONF()
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
-void dxl_uart_init(USART_TypeDef* USART, uint32_t baudrate)
+void USART1_DXL_CONF(uint32_t baudrate)
 {
 	USART_InitTypeDef USART_Init_Structure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-//	clearServoReceiveBuffer();
+	clearServoReceiveBuffer();
 
 	USART_Init_Structure.USART_BaudRate = baudrate;
 	USART_Init_Structure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
@@ -223,47 +223,19 @@ void dxl_uart_init(USART_TypeDef* USART, uint32_t baudrate)
 	USART_Init_Structure.USART_StopBits = USART_StopBits_1;
 	USART_Init_Structure.USART_Parity = USART_Parity_No;
 	USART_Init_Structure.USART_Mode = USART_Mode_Tx;
-	USART_Init(USART, &USART_Init_Structure);
+	USART_Init(USART1, &USART_Init_Structure);
 
-	if(USART == USART1)
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	}
-	else if(USART == USART2)
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-	}
-	else if(USART == USART3)
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-	}
-	else if(USART == UART4)
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
-	}
-	else if(USART == UART5)
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
-	}
-	else if(USART == USART6)
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = USART6_IRQn;
-	}
-	else
-	{
-		NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	}
-
+	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init (&NVIC_InitStructure);
 
 	// enable the USART receive interrupt
-	USART_ITConfig (USART, USART_IT_RXNE, ENABLE);
+	USART_ITConfig (USART1, USART_IT_RXNE, ENABLE);
 
-	USART_HalfDuplexCmd(USART, ENABLE);
-	USART_Cmd (USART, ENABLE);
+	USART_HalfDuplexCmd(USART1, ENABLE);
+	USART_Cmd (USART1, ENABLE);
 }
 
 void USART1_CONF()
@@ -278,8 +250,6 @@ void USART1_CONF()
 
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
-	//RS-485:
-	dxl_uart_init(USART1, BAUDRATE);
 }
 
 void TIM_PWM_CONF(){
@@ -330,7 +300,4 @@ void TIM_PWM_CONF(){
 	TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable);
 	TIM_Cmd(TIM2, ENABLE);
 };
-
-
-
 

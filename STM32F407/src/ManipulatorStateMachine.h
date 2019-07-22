@@ -10,11 +10,10 @@
 
 //#include "Utils/StateMachine.h"
 
-#include "PWMMotor.h"
+#include "BoardConfig.h"
 #include "HighPowerMotor.h"
 #include "ServoMotor.h"
-
-#include "BoardConfig.h"
+#include "PWMMotor.h"
 
 #define NUM_JOINTS 6
 
