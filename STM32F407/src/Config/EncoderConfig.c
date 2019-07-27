@@ -5,8 +5,6 @@
 
 #include "EncoderConfig.h"
 
-#define ENCODER_RES 1024
-
 //Quadratic signal
 
 void ENC7init() {
@@ -32,7 +30,7 @@ void ENC7init() {
 	TIM_EncoderInterfaceConfig(TIM3, TIM_EncoderMode_TI12,
 			TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 
-	TIM_SetAutoreload(TIM3, ENCODER_RES-1);
+	TIM_SetAutoreload(TIM3, ENCODER_RANGE_LOW-1);
 
 	TIM_SetCounter(TIM3, 0);
 
@@ -62,7 +60,7 @@ void ENC6init() {
 	TIM_EncoderInterfaceConfig(TIM8, TIM_EncoderMode_TI12,
 			TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 
-	TIM_SetAutoreload(TIM8, ENCODER_RES-1);
+	TIM_SetAutoreload(TIM8, ENCODER_RANGE_HIGH-1);
 
 	TIM_SetCounter(TIM8, 0);
 
@@ -92,7 +90,7 @@ void ENC3init() {
 	TIM_EncoderInterfaceConfig(TIM1, TIM_EncoderMode_TI12,
 			TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 
-	TIM_SetAutoreload(TIM1, ENCODER_RES-1);
+	TIM_SetAutoreload(TIM1, ENCODER_RANGE_LOW-1);
 
 	TIM_SetCounter(TIM1, 0);
 
@@ -122,7 +120,7 @@ void ENC2init() {
 	TIM_EncoderInterfaceConfig(TIM5, TIM_EncoderMode_TI12,
 			TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 
-	TIM_SetAutoreload(TIM5, ENCODER_RES-1);
+	TIM_SetAutoreload(TIM5, ENCODER_RANGE_HIGH-1);
 
 	TIM_SetCounter(TIM5, 0);
 

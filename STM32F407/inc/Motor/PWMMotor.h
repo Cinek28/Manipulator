@@ -13,18 +13,23 @@
 
 class PWMMotor: public Motor {
 public:
-	PWMMotor(){};
+	PWMMotor():
+		pwmChannel(nullptr),
+		gpioPort(nullptr),
+		pinCW(0),
+		pinCCW(0){};
+
 	PWMMotor(volatile uint32_t * pwm_channel,
 			volatile uint32_t * encoder_cnt,
-			GPIO_TypeDef * port, uint16_t pin_1,
-			uint16_t pin_2);
+			GPIO_TypeDef * port, const uint16_t& pin_1,
+			const uint16_t& pin_2);
 
 	virtual ~PWMMotor(){};
 
 	void init(volatile uint32_t * pwm_channel,
 			volatile uint32_t * encoder_cnt,
-			GPIO_TypeDef * port, uint16_t pin_1,
-			uint16_t pin_2);
+			GPIO_TypeDef * port, const uint16_t& pin_1,
+			const uint16_t& pin_2);
 
 	virtual void setVelocity(const double& velocity);
 

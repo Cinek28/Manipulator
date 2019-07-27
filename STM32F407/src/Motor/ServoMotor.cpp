@@ -33,9 +33,11 @@ void ServoMotor::setVelocity(const double& velocity)
 	setServoSpeed(servoID, (uint8_t)(vel_cmd >> 8), (uint8_t)(vel_cmd));
 }
 
-const double ServoMotor::getVelocity() const
+double ServoMotor::getVelocity()
 {
-	return 0 ; //TODO
+	int16_t value;
+	getServoCurrentVelocity(servoID, &value);
+	return (double)value; //TODO
 }
 
 void ServoMotor::setCurrentMode(const ServoMotor::MODE& mode)

@@ -11,7 +11,7 @@ HighPowerMotor::HighPowerMotor(volatile uint32_t * pwm_channel_1,
 		volatile uint32_t * pwm_channel_2,
 		volatile uint32_t * encoder_cnt)
 {
-	encoderCnt= encoder_cnt;
+	encoder.currentCount= encoder_cnt;
 	channelCW = pwm_channel_1;
 	channelCCW = pwm_channel_2;
 }
@@ -20,7 +20,7 @@ void HighPowerMotor::init(volatile uint32_t * pwm_channel_1,
 		volatile uint32_t * pwm_channel_2,
 		volatile uint32_t * encoder_cnt)
 {
-	encoderCnt= encoder_cnt;
+	encoder.currentCount= encoder_cnt;
 	channelCW = pwm_channel_1;
 	channelCCW = pwm_channel_2;
 }

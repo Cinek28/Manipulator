@@ -9,6 +9,7 @@
 #define SRC_MOTOR_H_
 
 #include <stdint.h>
+#include "EncoderConfig.h"
 
 #define MAX_PWM_VALUE 1000
 
@@ -23,14 +24,15 @@ public:
 
 	virtual void setRatio(const double& ratio);
 	virtual void setMaxVelocity(const double& max_vel);
+	virtual void setEncoderRange(const uint32_t& range);
     virtual void setVelocity(const double& velocity) = 0;
 
-    virtual const double getVelocity() const;
+    virtual double getVelocity();
 
 protected:
     double ratio = 1;
 
-    volatile uint32_t * encoderCnt;
+    Encoder encoder;
 
     int16_t prevError = 0;
     int16_t errorSum = 0;

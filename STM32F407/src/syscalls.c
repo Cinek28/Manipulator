@@ -74,14 +74,14 @@ void _exit(int32_t status)
 	while (1) {}		/* Make sure we hang here */
 }
 
-int _write(int32_t file, uint8_t *ptr, int32_t len)
-{
-	/* Implement your write code here, this is used by puts and printf for example */
-	/* return len; */
-	
-	errno = ENOSYS;
-	return -1;
-}
+//int _write(int32_t file, uint8_t *ptr, int32_t len)
+//{
+//	/* Implement your write code here, this is used by puts and printf for example */
+//	/* return len; */
+//
+//	errno = ENOSYS;
+//	return -1;
+//}
 
 void * _sbrk(int32_t incr)
 {

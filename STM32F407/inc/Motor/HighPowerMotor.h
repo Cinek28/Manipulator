@@ -12,7 +12,7 @@
 
 class HighPowerMotor: public Motor {
 public:
-	HighPowerMotor(){};
+	HighPowerMotor():channelCW(nullptr), channelCCW(nullptr){};
 	HighPowerMotor(volatile uint32_t * pwm_channel_1,
 			volatile uint32_t * pwm_channel_2,
 			volatile uint32_t * encoder_cnt);

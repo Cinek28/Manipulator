@@ -24,17 +24,35 @@ void Motor::setMaxVelocity(const double& max_vel)
 	maxVel = max_vel;
 }
 
-const double Motor::getVelocity() const
+void Motor::setEncoderRange(const uint32_t& range)
 {
-	return 0;
+	encoder.range = range;
+}
+
+double Motor::getVelocity()
+{
+	float velocity = 0;
+
+	if (*encoder.currentCount <= 0.1*encoder.range && encoder.previousCount >= encoder.range*0.9
+			&& encoder.previousCount <= encoder.range) {
+		velocity = *encoder.currentCount - encoder.previousCount + encoder.range;
+	} else if (*encoder.currentCount <= encoder.range && *encoder.currentCount >= encoder.range*0.9
+			&& encoder.previousCount <= 0.1*encoder.range) {
+		velocity = *encoder.currentCount - encoder.previousCount - encoder.range;
+	} else {
+		velocity = *encoder.currentCount - encoder.previousCount;
+	}
+
+	encoder.previousCount = *encoder.currentCount;
+	return velocity / encoder.range * 1000 * 2 * 3.1415;
 }
 
 void Motor::calcPWM(const double& targetVelocity)
 {
 
-	if(encoderCnt == nullptr)
+	if(encoder.currentCount == nullptr)
 	{
-		pwm = targetVelocity/maxVel*MAX_PWM_VALUE; //TODO
+		pwm = targetVelocity/(maxVel*ratio)*MAX_PWM_VALUE;
 		return;
 	}
 

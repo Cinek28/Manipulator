@@ -15,10 +15,12 @@
 #ifndef DXL_RX64_H_
 #define DXL_RX64_H_
 
-//Library for STM32 UART control here:
-#include "stm32f4xx_usart.h"
 #include <stdbool.h>
 #include <stdlib.h>
+
+#include "stm32f4xx_usart.h"
+
+#include "CyclicBuffer.h"
 
 #define REC_BUFFER_LEN 32
 #define SERVO_MAX_PARAMS (REC_BUFFER_LEN - 5)
@@ -42,13 +44,13 @@
 #define MAX_SPEED           0x20
 #define CURRENT_SPEED       0x26
 #define GOAL_ANGLE          0x1e
-#define CURRENT_ANGLE 0x24
+#define CURRENT_ANGLE 		0x24
 
-extern uint8_t servoErrorCode;
+#define SERVO_USART_PORT USART1
 
-extern volatile uint8_t receiveBuffer[REC_BUFFER_LEN];
-extern volatile uint8_t* volatile receiveBufferStart;
-extern volatile uint8_t* volatile receiveBufferEnd;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct ServoResponse
 {
@@ -67,12 +69,6 @@ typedef enum ServoCommand
 	WRITE = 3
 } ServoCommand;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void clearServoReceiveBuffer (void);
-
 void sendServoByte(const uint8_t byte);
 
 void sendServoCommand (const uint8_t servoId,
@@ -80,20 +76,18 @@ void sendServoCommand (const uint8_t servoId,
                        const uint8_t numParams,
                        const uint8_t *params);
 
-size_t  getServoBytesAvailable (void);
-uint8_t getServoByte (void);
-
-bool getServoResponse (void);
-
-bool getAndCheckResponse (const uint8_t servoId);
+bool getServoResponseByte (cyclicBuffer* buffer,
+						   ServoResponse* msg);
 
 bool pingServo(const uint8_t servoId);
 
 // Instructions sent to servo:
 // Light up/down diode:
-void setServoDiode(uint8_t servoID, uint8_t isOn);
+bool setServoDiode(uint8_t servoId,
+				   uint8_t isOn);
 
-void setServoBaudrate(uint8_t servoID, uint8_t baudrate);
+bool setServoBaudrate(uint8_t servoId,
+					  uint8_t baudrate);
 
 // valid torque values are from 0 (free running) to 1023 (max)
 bool setServoTorque (const uint8_t servoId,
@@ -119,11 +113,14 @@ bool setServoAngle (const uint8_t servoId,
                     const float angle);
 
 bool getServoAngle (const uint8_t servoId,
-uint16_t *angle);
+					uint16_t *angle);
 
-void enableTorque(uint8_t servoID, uint8_t isEnabled);
+bool enableTorque(uint8_t servoId,
+		          uint8_t isEnabled);
 
-void setServoSpeed(uint8_t servoID, uint8_t higherByte, uint8_t lowerByte);
+bool setServoSpeed(uint8_t servoId,
+				   uint8_t higherByte,
+				   uint8_t lowerByte);
 
 #ifdef __cplusplus
 }

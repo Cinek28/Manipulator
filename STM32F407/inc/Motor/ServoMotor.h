@@ -33,7 +33,7 @@ public:
 	void setCurrentMode(const MODE& mode);
 	void setLed(bool isOn);
 
-	virtual const double getVelocity() const;
+	virtual double getVelocity();
 	const uint8_t& getServoID() const{ return servoID;};
 
 private:
