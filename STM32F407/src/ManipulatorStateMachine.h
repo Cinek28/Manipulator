@@ -15,6 +15,7 @@
 #include "PWMMotor.h"
 
 #include "UARTComm.h"
+#include "Debug.h"
 
 #define NUM_JOINTS 6
 #define NUM_STATES 6
@@ -26,9 +27,11 @@ enum State
 	RESET_STATE,
 	IDLE_STATE,
 	JOINT_STATE,
-	TOOL_STATE,
+	TEST_STATE,
 	SIM_STATE
 };
+
+const char* stateToStr(State state);
 
 typedef State (*handler_t)(void*);
 
@@ -42,6 +45,7 @@ public:
 	uint8_t init();
 
 	void setJointsVel(const double* velocities);
+	void setMode(MODE mode);
 	void emergencyStop();
 
 	void closeGripper(const double& velocity);
@@ -73,7 +77,7 @@ State runInit(void* params);
 State runReset(void* params);
 State runIdle(void* params);
 State runJointMode(void* params);
-State runToolMode(void* params);
+State runTestMode(void* params);
 State runSimMode(void* params);
 
 #endif /* SRC_MANIPULATORSTATEMACHINE_H_ */

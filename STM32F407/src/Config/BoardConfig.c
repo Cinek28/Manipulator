@@ -196,10 +196,9 @@ void USART2_CONF()
 
 	// USART_2 peripheral settings:
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 	USART_InitTypeDef USART_Init_Structure;
 
-	USART_Init_Structure.USART_BaudRate = 1000000;
+	USART_Init_Structure.USART_BaudRate = 9600;
 	USART_Init_Structure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_Init_Structure.USART_WordLength = USART_WordLength_8b;
 	USART_Init_Structure.USART_StopBits = USART_StopBits_1;
@@ -209,16 +208,16 @@ void USART2_CONF()
 	USART_Cmd(USART2, ENABLE);
 
 	// USART_2 interrupt settings:
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+	NVIC_PriorityGroupConfig(0);
 
 	NVIC_InitTypeDef NVIC_InitStruct;
 	NVIC_InitStruct.NVIC_IRQChannel = USART2_IRQn;
-	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 6;
+//	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStruct);
 
-	NVIC_SetPriority(USART2_IRQn, 1);
+	NVIC_SetPriority(USART2_IRQn, 6);
 	NVIC_EnableIRQ(USART2_IRQn);
 
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
@@ -238,10 +237,13 @@ void USART1_DXL_CONF(uint32_t baudrate)
 	USART_Init(USART1, &USART_Init_Structure);
 
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 6;
+//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init (&NVIC_InitStructure);
+
+	NVIC_SetPriority(USART1_IRQn, 6);
+	NVIC_EnableIRQ(USART1_IRQn);
 
 	// enable the USART receive interrupt
 	USART_ITConfig (USART1, USART_IT_RXNE, ENABLE);
@@ -254,6 +256,7 @@ void USART1_CONF()
 {
 	//USART_1 GPIO settings:
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;

@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
+
 typedef enum LEVEL
 {
 	ERR = 0,
@@ -44,10 +46,10 @@ const char* toStr(LEVEL level)
 	if(level > loggingLevel) ; \
 	else \
 	{ \
-		printf("\n%s %s | %s [%d]:\t", \
+		printf("\r\n%s %s | %s[%d]:\t", \
 				toStr(level), __FILE__ , \
-				__FUNCTION__, __LINE__, \
-				__VA_ARGS__); \
+				__FUNCTION__, __LINE__); \
+		printf(__VA_ARGS__); \
 	}
 #else
 #define _LOG(...)

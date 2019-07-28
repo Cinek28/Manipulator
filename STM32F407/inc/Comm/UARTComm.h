@@ -58,6 +58,8 @@ extern volatile ManipulatorMsg msg;
 extern cyclicBuffer servoBuffer;
 extern volatile ServoResponse servoMsg;
 
+extern TaskHandle_t* wakeTaskHandle;
+
 bool getAndCheckResponse (const uint8_t servoId, ServoResponse* msg);
 void USART1_IRQHandler (void);
 void USART2_IRQHandler (void);

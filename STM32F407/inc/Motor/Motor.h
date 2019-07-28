@@ -13,6 +13,12 @@
 
 #define MAX_PWM_VALUE 1000
 
+typedef enum MODE
+{
+	FREE = 0,
+	PID
+};
+
 class Motor
 {
 public:
@@ -26,11 +32,13 @@ public:
 	virtual void setMaxVelocity(const double& max_vel);
 	virtual void setEncoderRange(const uint32_t& range);
     virtual void setVelocity(const double& velocity) = 0;
+    virtual void setMode(MODE newMode){mode = newMode;};
 
     virtual double getVelocity();
 
 protected:
     double ratio = 1;
+    MODE mode = FREE;
 
     Encoder encoder;
 

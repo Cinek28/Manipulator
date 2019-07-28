@@ -50,9 +50,9 @@ double Motor::getVelocity()
 void Motor::calcPWM(const double& targetVelocity)
 {
 
-	if(encoder.currentCount == nullptr)
+	if(encoder.currentCount == nullptr || mode == FREE)
 	{
-		pwm = targetVelocity/(maxVel*ratio)*MAX_PWM_VALUE;
+		pwm = targetVelocity/(maxVel)*MAX_PWM_VALUE;
 		return;
 	}
 

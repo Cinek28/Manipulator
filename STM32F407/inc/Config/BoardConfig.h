@@ -17,7 +17,7 @@
 #define TIMEOUT_MS 200
 #define SYSTICK_FREQ 1000
 #define SYSTIC_CNT CORE_CLK_FREQ/SYSTICK_FREQ
-#define BAUDRATE 1000000
+#define BAUDRATE 57600
 
 #ifdef __cplusplus
 extern "C" {

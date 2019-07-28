@@ -32,6 +32,7 @@ void sendServoCommand (const uint8_t servoId,
 {
 	for(uint8_t i = 0; i < 3; ++i)
 	{
+		__disable_irq();
 		sendServoByte(0xff);
 		sendServoByte(0xff);  // command header
 		sendServoByte(servoId);  // servo ID
@@ -46,7 +47,6 @@ void sendServoCommand (const uint8_t servoId,
 			sendServoByte (params[i]);  // parameters
 			checksum += params[i];
 		}
-		__disable_irq();
 		sendServoByte (~checksum);  // checksum
 		__enable_irq();
 	}
@@ -55,7 +55,8 @@ void sendServoCommand (const uint8_t servoId,
 bool getServoResponseByte (cyclicBuffer* buffer,
 						   ServoResponse* msg)
 {
-	setBufferByte(buffer, (uint8_t)USART_ReceiveData(SERVO_USART_PORT));
+	uint8_t byte = (uint8_t)USART_ReceiveData(SERVO_USART_PORT);
+	setBufferByte(buffer, byte);
 	uint8_t size = (uint8_t)getBufferOccupiedSize(buffer);
 	if(size == 2)
 	{
@@ -67,11 +68,11 @@ bool getServoResponseByte (cyclicBuffer* buffer,
 	}
 	else if(size == 3)
 	{
-		msg->id = *(buffer->end);
+		msg->id = *(buffer->end-1);
 	}
 	else if(size == 4)
 	{
-		msg->length = *(buffer->end);
+		msg->length = *(buffer->end-1);
 		if(msg->length > SERVO_MAX_PARAMS)
 		{
 			msg->length = 0;
@@ -80,22 +81,21 @@ bool getServoResponseByte (cyclicBuffer* buffer,
 	}
 	else if(size == 5)
 	{
-		msg->error = *(buffer->end);
+		msg->error = *(buffer->end-1);
 	}
-	else if(size > 5 && size < 5 + msg->length)
+	else if(size > 5 && size <= 5 + msg->length)
 	{
-		msg->params[size-5] = *(buffer->end);
+		msg->params[size-5] = *(buffer->end-1);
 	}
-	else
+	else if(size > 5 + msg->length)
 	{
-		msg->checksum = *(buffer->end);
+		msg->checksum = *(buffer->end-1);
 		uint8_t calcChecksum = msg->id + msg->error + msg->length;
 		for(int i = 0; i < msg->length; ++i)
 		{
 			calcChecksum += msg->params[i];
-			calcChecksum = ~calcChecksum;
 		}
-
+		calcChecksum = ~calcChecksum;
 		clearBuffer(buffer);
 
 		if(calcChecksum == msg->checksum)

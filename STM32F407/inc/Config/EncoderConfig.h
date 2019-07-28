@@ -24,11 +24,11 @@ typedef struct Encoder
 	uint32_t range;
 }Encoder;
 
-void ENK7init(void);
-void ENK6init(void);
-void ENK3init(void);
-void ENK2init(void);
-void ENK1init(void);
+void ENC7init(void);
+void ENC6init(void);
+void ENC3init(void);
+void ENC2init(void);
+void ENC1init(void);
 
 void TIM1_BRK_TIM9_IRQHandler();
 
