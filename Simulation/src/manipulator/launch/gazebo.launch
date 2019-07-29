@@ -34,17 +34,21 @@
         output="screen"
         ns="/manipulator"
         required="true"
-        args="shoulder_position_controller forearm_position_controller arm_position_controller
-        wrist_rot_position_controller wrist_pitch_position_controller gripper_position_controller
-        joint_state_controller --timeout 30"/>
+        args="shoulder_rotation_controller
+              forearm_rotation_controller
+              arm_rotation_controller
+              wrist_rotation_controller
+              wrist_pitch_controller
+              gripper_rotation_controller
+              joint_state_controller"/>
 
     <!-- Load robot hardware interface-->
-    <node name="RobotHWInterface"
-        pkg="manipulator"
-        type="RobotHWInterfaceNode"
-        required="false"/>
+    <node name="RobotHWInterfaceNode"
+          pkg="manipulator"
+          type="RobotHWInterfaceNode"
+          required="false"/>
 
-    <!-- Load robot hardware interface-->
+    <!-- Load 3D mouse controller node-->
     <node name="spacenav_node" pkg="spacenav_node" type="spacenav_node"
         output="screen" required="false">
         

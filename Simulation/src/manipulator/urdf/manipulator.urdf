@@ -81,11 +81,11 @@
   <transmission name="shoulder_rotation_transmission">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="shoulder_rotation">
-      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="shoulder_rotation_motor">
       <mechanicalReduction>1.5</mechanicalReduction>
-      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </actuator>
   </transmission>
 
@@ -134,11 +134,11 @@
   <transmission name="forearm_rotation_transmission">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="forearm_rotation">
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="forearm_rotation_motor">
         <mechanicalReduction>157</mechanicalReduction>
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </actuator>
    </transmission>
 
@@ -187,11 +187,11 @@
   <transmission name="arm_rotation_transmission">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="arm_rotation">
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="arm_rotation_motor">
         <mechanicalReduction>1</mechanicalReduction>
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </actuator>
    </transmission>
 
@@ -239,11 +239,11 @@
  <transmission name="wrist_rotation_transmission">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="wrist_rotation">
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="wrist_rotation_motor">
         <mechanicalReduction>1</mechanicalReduction>
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </actuator>
   </transmission>
 
@@ -337,10 +337,10 @@
       <type>transmission_interface/SimpleTransmission</type>
       <actuator name="wrist_pitch_motor">
         <mechanicalReduction>1.2</mechanicalReduction>
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </actuator>
       <joint name="wrist_pitch">
-        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
   </transmission>
 
@@ -348,10 +348,10 @@
         <type>transmission_interface/SimpleTransmission</type>
         <actuator name="gripper_rotation_motor">
           <mechanicalReduction>1.2</mechanicalReduction>
-          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </actuator>
         <joint name="gripper_rotation">
-          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>
   </transmission>
 
