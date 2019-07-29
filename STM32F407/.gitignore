@@ -2,6 +2,7 @@
 *.elf
 *.launch
 Debug/
+*Build*
 *.project
 *.cproject
-
+*.autotools
