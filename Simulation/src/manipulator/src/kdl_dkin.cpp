@@ -137,8 +137,7 @@ KDLSolver::KDLSolver(){
     joint_state_sub_ = nh_.subscribe("/joint_states",1, &KDLSolver::newStateCallback, this);
 
     // Sub geometry_msgs::Twist
-    twist_sub_ = nh_.subscribe("/twist",1,&KDLSolver::newVelCallback, this);
-
+    twist_sub_ = nh_.subscribe("/spacenav/twist",1,&KDLSolver::newVelCallback, this);
 
     twist_one_sub_ = nh_.subscribe("/twist_one",1,&KDLSolver::newVel, this);
 

@@ -8,60 +8,60 @@ manipulator:
 
 
 # Joint position controllers settings
-  shoulder_position_controller:
-    type: velocity_controllers/JointPositionController
+  shoulder_rotation_controller:
+    type: effort_controllers/JointVelocityController
     joint: shoulder_rotation
-    pid: {p: 2.0, i: 1.0, d: 0.0}
+    pid: {p: 20.0, i: 1.0, d: 0.0}
 
-  forearm_position_controller:
-    type: velocity_controllers/JointPositionController
+  forearm_rotation_controller:
+    type: effort_controllers/JointVelocityController
     joint: forearm_rotation
-    pid: {p: 200.0, i: 40.0, d: 0}
+    pid: {p: 500.0, i: 40.0, d: 0}
 
-  arm_position_controller:
-    type: velocity_controllers/JointPositionController
+  arm_rotation_controller:
+    type: effort_controllers/JointVelocityController
     joint: arm_rotation
-    pid: {p: 50.0, i: 10.0, d: 0.0}
+    pid: {p: 100.0, i: 10.0, d: 10.0}
 
-  wrist_rot_position_controller:
-    type: velocity_controllers/JointPositionController
+  wrist_rotation_controller:
+    type: effort_controllers/JointVelocityController
     joint: wrist_rotation
-    pid: {p: 1.5, i: 0.5, d: 0.0}
+    pid: {p: 20, i: 0.5, d: 0.0}
 
-  wrist_pitch_position_controller:
-    type: velocity_controllers/JointPositionController
+  wrist_pitch_controller:
+    type: effort_controllers/JointVelocityController
     joint: wrist_pitch
-    pid: {p: 20.0, i: 5.0, d: 0.0}
+    pid: {p: 100.0, i: 5.0, d: 0.0}
 
-  gripper_position_controller:
-    type: velocity_controllers/JointPositionController
+  gripper_rotation_controller:
+    type: effort_controllers/JointVelocityController
     joint: gripper_rotation
     pid: {p: 0.5, i: 1.0, d: 0.0}
 
 
-  gazebo_ros_control:
-    pid_gains:
-      shoulder_rotation:
-        p: 2.0
-        i: 1.0
-        d: 0.0
-      forearm_rotation:
-        p: 200.0
-        i: 40.0
-        d: 0
-      arm_rotation:
-        p: 50.0
-        i: 10.0
-        d: 0.0
-      wrist_rotation:
-        p: 1.5
-        i: 0.5
-        d: 0.0
-      wrist_pitch:
-        p: 20.0
-        i: 5.0
-        d: 0.0
-      gripper_rotation:
-        p: 0.5
-        i: 1.0
-        d: 0.0
+#  gazebo_ros_control:
+#    pid_gains:
+#      shoulder_rotation:
+#        p: 100.0
+#        i: 1.0
+#        d: 20.0
+#      forearm_rotation:
+#        p: 500.0
+#        i: 0.0
+#        d: 20
+#      arm_rotation:
+#        p: 200.0
+#        i: 0.0
+#        d: 20.0
+#      wrist_rotation:
+#        p: 200
+#        i: 5.0
+#        d: 0.0
+#      wrist_pitch:
+#        p: 100.0
+#        i: 5.0
+#        d: 0.0
+#      gripper_rotation:
+#        p: 15.0
+#        i: 2.0
+#        d: 0.0
