@@ -47,7 +47,7 @@ SOFTWARE.
 
 TaskHandle_t* stateMachineHandle = NULL;
 TaskHandle_t* wakeTaskHandle = NULL;
-void stateMachineHandler(void* a);
+void stateMachineHandler(void*);
 
 QueueHandle_t usartQueue;
 QueueHandle_t rs485Queue;

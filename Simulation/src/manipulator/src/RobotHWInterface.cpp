@@ -1,6 +1,5 @@
 #include <sstream>
 #include "RobotHWInterface.h"
-// #include <ROBOTcpp/ROBOT.h>
 
 using namespace hardware_interface;
 using joint_limits_interface::JointLimits;
@@ -37,8 +36,6 @@ void RobotHWInterface::init()
     // Initialize Controller
     for (int i = 0; i < numJoints; ++i)
     {
-        // ROBOTcpp::Joint joint = ROBOT.getJoint(jointNames[i]);
-
         // Create joint state interface
         JointStateHandle jointStateHandle(jointNames[i], &jointPosition[i], &jointVelocity[i], &jointEffort[i]);
         jointStateInt.registerHandle(jointStateHandle);
