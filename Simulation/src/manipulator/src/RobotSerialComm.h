@@ -16,11 +16,9 @@
 
 typedef enum ManipulatorCmd
 {
-	START = 1,
-	MOVE = 2,
-	CHANGE_STATE = 3,
-	STOP = 4,
-	IDLE = 5
+	TEST_STATE = 0,
+	JOINT_STATE = 1,
+	IDLE_STATE = 2
 } ManipulatorCmd;
 
 struct ManipulatorMsg
@@ -38,7 +36,7 @@ public:
 	RobotSerialComm();
 	~RobotSerialComm();
 
-	bool openPort( int nPort = 2, int nBaud = 9600 );
+	bool openPort( int port = 0, int baudrate = 9600 );
 	bool closePort( void );
 
 	int sendData( const char *, int );

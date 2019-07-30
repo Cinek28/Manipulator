@@ -1,6 +1,6 @@
 manipulator:
   hardware_interface:
-     rate: 50 # hz
+     rate: 1000 # hz
      joints:
       - shoulder_rotation
       - forearm_rotation

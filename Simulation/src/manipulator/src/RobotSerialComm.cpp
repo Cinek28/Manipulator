@@ -1,5 +1,7 @@
 // RobotSerialComm.cpp
 
+#include <string>
+
 #include "RobotSerialComm.h"
 
 RobotSerialComm::RobotSerialComm()
@@ -12,9 +14,10 @@ RobotSerialComm::~RobotSerialComm()
 	close();
 }
 
-bool RobotSerialComm::openPort( int nPort, int nBaud )
+bool RobotSerialComm::openPort( int port, int baudrate )
 {
-	serialPort = open("/dev/tty0", O_RDWR);
+	std::string portName = "/dev/tty" + std::to_string(port);
+	serialPort = open(portName.c_str(), O_RDWR);
 
 	if (serialPort < 0) {
     	printf("Error %i from open: %s\n", errno, strerror(errno));
@@ -44,9 +47,9 @@ bool RobotSerialComm::openPort( int nPort, int nBaud )
 	// Wait for up to 100ms, return as soon as any data received:
 	tty.c_cc[VTIME] = TIMEOUT;
 	tty.c_cc[VMIN] = 1;
-	// Set in/out baud rate to be 9600
-	cfsetispeed(&tty, B9600);
-	cfsetospeed(&tty, B9600);
+	// Set in/out baud rate:
+	cfsetispeed(&tty, baudrate);
+	cfsetospeed(&tty, baudrate);
 
 	// Save tty settings, also checking for error
 	if (tcsetattr(serialPort, TCSANOW, &tty) != 0) 
@@ -54,7 +57,7 @@ bool RobotSerialComm::openPort( int nPort, int nBaud )
     	printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
 		return false;
 	}
-	isOpened = true;
+	portOpened = true;
 
 	return true;
 
@@ -62,26 +65,8 @@ bool RobotSerialComm::openPort( int nPort, int nBaud )
 
 bool RobotSerialComm::closePort( void )
 {
-	isOpened = false;
+	portOpened = false;
 	close(serialPort);
-}
-
-bool RobotSerialComm::writeByte( unsigned char ucByte )
-{
-	BOOL bWriteStat;
-	DWORD dwBytesWritten;
-
-	bWriteStat = WriteFile( m_hIDComDev, (LPSTR) &ucByte, 1, &dwBytesWritten, &m_OverlappedWrite );
-	if( !bWriteStat && ( GetLastError() == ERROR_IO_PENDING ) ){
-		if( WaitForSingleObject( m_OverlappedWrite.hEvent, 1000 ) ) dwBytesWritten = 0;
-		else{
-			GetOverlappedResult( m_hIDComDev, &m_OverlappedWrite, &dwBytesWritten, FALSE );
-			m_OverlappedWrite.Offset += dwBytesWritten;
-			}
-		}
-
-	return( TRUE );
-
 }
 
 int RobotSerialComm::sendData( ManipulatorMsg *msg)
@@ -102,9 +87,15 @@ bool RobotSerialComm::readByte(unsigned char* byte)
 
 bool RobotSerialComm::readData( ManipulatorMsg *msg)
 {
+	if(!isOpened)
+		return false;
 	unsigned char byte = 0;
 	if(!readByte(&byte))
+	{
+		printf("Disconnected from device. Need to reconnect\n");
+		closePort();
 		return false;
+	}
 	setBufferByte(&buffer, byte);
 	int size = (int)getBufferOccupiedSize(&buffer);
 

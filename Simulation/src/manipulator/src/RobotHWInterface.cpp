@@ -110,6 +110,8 @@ void RobotHWInterface::init()
     registerInterface(&positionJointInt);
     registerInterface(&effortJointInt);
 //    registerInterface(&positionJointSoftLimitsInterface);
+
+    robot.openPort(0, BAUDRATE);
 }
 
 void RobotHWInterface::update(const ros::TimerEvent &e)
@@ -122,10 +124,14 @@ void RobotHWInterface::update(const ros::TimerEvent &e)
 
 void RobotHWInterface::read()
 {
-    for (int i = 0; i < numJoints; i++)
+    ManipulatorMsg msg;
+
+    if(robot.isOpened() && robot.readData(&msg))
     {
-        // TODO: Read positions from robot
-//        jointPosition[i] = jointPosition[i];//ROBOT.getJoint(joint_names_[i]).read();
+        for (int i = 0; i < numJoints; i++)
+        {
+            jointVelocity[i] = (double)(msg.params[i] | (msg.params[i+1] << 8));
+        }
     }
 }
 
@@ -141,12 +147,20 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
         }
     }
     else
-    {
+    {   ManipulatorMsg msg;
+        uint16_t velocity = 0;
+        msg.type = MOVE;
+        msg.length = 2*numJoints;
+        msg.checksum = msg.type + msg.length;
         for (int i = 0; i < numJoints; i++)
         {
             // TODO: Write joints velocities/efforts
-            //ROBOT.getJoint(joint_names_[i]).actuate(jointEffortCommands[i]);
+            msg.params[i] = (uint8_t)jointVelocities(i);
+            msg.params[i+1] = (uint8_t)(jointVelocities(i) >> 8);
+            msg.checksum += msg.params[i] + msg.params[i+1];
         }
+        msg.checksum ~= msg.checksum;
+        robot.sendData(&msg);
     }
 }
 
@@ -179,14 +193,21 @@ KDL::JntArray RobotHWInterface::solveIndirectKinematics(const geometry_msgs::Twi
 }
 
 void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg) {
-    // Calculate indirect kinematics
-//    jointVelocities = solveIndirectKinematics(msg);
-    jointVelocities(0) = msg.linear.x;
-    jointVelocities(1) = msg.linear.y;
-    jointVelocities(2) = msg.linear.z;
-    jointVelocities(3) = msg.angular.x;
-    jointVelocities(4) = msg.angular.y;
-    jointVelocities(5) = msg.angular.z;
+    
+    if(mode == TOOL_MODE)
+    {
+        // Calculate indirect kinematics
+        jointVelocities = solveIndirectKinematics(msg);
+    }
+    else
+    {
+        jointVelocities(0) = msg.linear.x;
+        jointVelocities(1) = msg.linear.y;
+        jointVelocities(2) = msg.linear.z;
+        jointVelocities(3) = msg.angular.x;
+        jointVelocities(4) = msg.angular.y;
+        jointVelocities(5) = msg.angular.z;
+    }
 
     for (int i = 0; i < 6; ++i)
     {
