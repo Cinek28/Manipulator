@@ -156,10 +156,10 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
         {
             // TODO: Write joints velocities/efforts
             msg.params[i] = (uint8_t)jointVelocities(i);
-            msg.params[i+1] = (uint8_t)(jointVelocities(i) >> 8);
+            msg.params[i+1] = (uint8_t)((uint16_t)jointVelocities(i) >> 8);
             msg.checksum += msg.params[i] + msg.params[i+1];
         }
-        msg.checksum ~= msg.checksum;
+        msg.checksum = ~msg.checksum;
         robot.sendData(&msg);
     }
 }

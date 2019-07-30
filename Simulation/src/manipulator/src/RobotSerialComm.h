@@ -28,7 +28,7 @@ struct ManipulatorMsg
 	unsigned char length;
 	unsigned char params[MAX_PARAMS];
 	unsigned char checksum;
-}
+};
 
 class RobotSerialComm
 {
@@ -40,8 +40,8 @@ public:
 	bool openPort( int port = 0, int baudrate = 9600 );
 	bool closePort( void );
 
-	int sendData( const char *, int );
-	int readData( void );
+	int sendData( ManipulatorMsg *msg);
+	bool readData( ManipulatorMsg *msg );
 
 	bool isOpened( void ){ return( portOpened ); }
 
@@ -53,8 +53,7 @@ protected:
 
 	cyclicBuffer buffer;
 
-	bool writeByte( unsigned char );
-	int readByte( void *, int );
+	bool readByte(unsigned char* byte);
 };
 
 #endif
