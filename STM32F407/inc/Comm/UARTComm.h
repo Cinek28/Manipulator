@@ -26,11 +26,10 @@ extern "C" {
 
 typedef enum ManipulatorCmd
 {
-	START = 1,
-	MOVE = 2,
-	CHANGE_STATE = 3,
-	STOP = 4,
-	IDLE = 5
+	JOINT = 0,
+	TOOL = 1,
+	TEST = 2,
+	IDLE = 3
 } ManipulatorCmd;
 
 typedef struct ManipulatorMsg

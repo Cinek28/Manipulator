@@ -27,7 +27,7 @@ void HighPowerMotor::init(volatile uint32_t * pwm_channel_1,
 
 void HighPowerMotor::setVelocity(const double& velocity)
 {
-	calcPWM(velocity*ratio);
+	calcPWM(velocity*ratio, getVelocity());
 
 	if(pwm < 0)
 	{

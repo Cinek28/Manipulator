@@ -33,7 +33,7 @@ void PWMMotor::init(volatile uint32_t * pwm_channel,
 
 void PWMMotor::setVelocity(const double& velocity)
 {
-	calcPWM(velocity*ratio);
+	calcPWM(velocity*ratio, getVelocity());
 
 	if(pwm < 0)
 	{

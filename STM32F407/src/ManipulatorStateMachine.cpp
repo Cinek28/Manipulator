@@ -21,10 +21,10 @@ const char* stateToStr(State state)
 		return "IDLE_STATE";
 	case JOINT_STATE:
 		return "JOINT_STATE";
+	case TOOL_STATE:
+		return "TOOL_STATE";
 	case TEST_STATE:
 		return "TEST_STATE";
-	case SIM_STATE:
-		return "SIM_STATE";
 	default:
 		return "UNKNOWN";
 	}
@@ -36,8 +36,8 @@ ManipulatorStateMachine::ManipulatorStateMachine()
 	stateHandlers[RESET_STATE] = runReset;
 	stateHandlers[IDLE_STATE] = runIdle;
 	stateHandlers[JOINT_STATE] = runJointMode;
+	stateHandlers[TOOL_STATE] = runToolMode;
 	stateHandlers[TEST_STATE] = runTestMode;
-	stateHandlers[SIM_STATE] = runSimMode;
 
 	joints[0] = &shoulder;
 	joints[1] = &forearm;
@@ -185,53 +185,64 @@ State runInit(void* params)
 State runReset(void* params)
 {
 	ManipulatorStateMachine* manipulator = (ManipulatorStateMachine*)params;
-	// TODO
-	return RESET_STATE;
-}
-
-State runIdle(void* params)
-{
-	ManipulatorStateMachine* manipulator = (ManipulatorStateMachine*)params;
 	manipulator->emergencyStop();
 	xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
-	ManipulatorMsg msg;
-	if(xQueueReceive(usartQueue, (void*) &msg, TIMEOUT/portTICK_PERIOD_MS))
+	if(xQueueReceive(usartQueue, (void*) &(manipulator->msgReceived), TIMEOUT/portTICK_PERIOD_MS))
 	{
-		switch(msg.type)
+		switch(manipulator->msgReceived.type)
 		{
-			case CHANGE_STATE:
+			case JOINT ... TEST:
 			{
-				return (State)msg.params[0];
+				return manipulator->msgReceived.type;
 			}
 			default:
 				return IDLE_STATE;
 		}
 	}
+	return RESET_STATE;
+}
+
+State runIdle(void* params)
+{
+	ManipulatorStateMachine* manipulator = (ManipulatorStateMachine*)params;;
+	if(xQueueReceive(usartQueue, (void*) &(manipulator->msgReceived), 0))
+	{
+		switch(manipulator->msgReceived.type)
+		{
+			case JOINT ... TEST:
+			{
+				return manipulator->msgReceived.type;
+			}
+			default:
+				return IDLE_STATE;
+		}
+	}
+
 	return IDLE_STATE;
 }
 
 State runJointMode(void* params)
 {
 	ManipulatorStateMachine* manipulator = (ManipulatorStateMachine*)params;
-	ManipulatorMsg msg;
-	if(xQueueReceive(usartQueue, (void*) &msg, TIMEOUT/portTICK_PERIOD_MS))
+	if(xQueueReceive(usartQueue, (void*) &(manipulator->msgReceived), TIMEOUT/portTICK_PERIOD_MS))
 	{
-		switch(msg.type)
+		switch(manipulator->msgReceived.type)
 		{
-			case MOVE:
+			case JOINT:
 			{
 				double vels[NUM_JOINTS];
-				for(int i = 0; i < msg.length/2; ++i)
+				for(int i = 0; i < manipulator->msgReceived.length/2; ++i)
 				{
-					vels[i] = (double)(msg.params[i] | msg.params[i+1] << 8);
+					vels[i] = (double)(manipulator->msgReceived.params[i] |
+									   manipulator->msgReceived.params[i+1] << 8);
 					manipulator->setMode(PID);
-					manipulator->setJointsVel(vels);
 				}
+				manipulator->setJointsVel(vels);
 				return JOINT_STATE;
 			}
-			case CHANGE_STATE:
+			case TOOL ... TEST:
 			{
-				return (State)msg.params[0];
+				return manipulator->msgReceived.type;
 			}
 			default:
 				return IDLE_STATE;
@@ -240,28 +251,32 @@ State runJointMode(void* params)
 	return IDLE_STATE;
 }
 
-State runTestMode(void* params)
+State runToolMode(void* params)
 {
 	ManipulatorStateMachine* manipulator = (ManipulatorStateMachine*)params;
-	ManipulatorMsg msg;
-	if(xQueueReceive(usartQueue, (void*) &msg, TIMEOUT/portTICK_PERIOD_MS))
+	if(xQueueReceive(usartQueue, (void*) &(manipulator->msgReceived), TIMEOUT/portTICK_PERIOD_MS))
 	{
-		switch(msg.type)
+		switch(manipulator->msgReceived.type)
 		{
-		case MOVE:
+		case TOOL:
 		{
 			double vels[NUM_JOINTS];
-			for(int i = 0; i < msg.length/2; ++i)
+			for(int i = 0; i < manipulator->msgReceived.length/2; ++i)
 			{
-				vels[i] = (double)(msg.params[i] | msg.params[i+1] << 8);
-				manipulator->setMode(FREE);
-				manipulator->setJointsVel(vels);
+				vels[i] = (double)(manipulator->msgReceived.params[i] |
+						           manipulator->msgReceived.params[i+1] << 8);
+				manipulator->setMode(PID);
 			}
-			return TEST_STATE;
+			manipulator->setJointsVel(vels);
+			return TOOL_STATE;
 		}
-		case CHANGE_STATE:
+		case JOINT:
 		{
-			return (State)msg.params[0];
+			return JOINT_STATE;
+		}
+		case TEST:
+		{
+			return TEST_STATE;
 		}
 		default:
 			return IDLE_STATE;
@@ -270,9 +285,38 @@ State runTestMode(void* params)
 	return IDLE_STATE;
 }
 
-State runSimMode(void* params)
+State runTestMode(void* params)
 {
 	ManipulatorStateMachine* manipulator = (ManipulatorStateMachine*)params;
-	return SIM_STATE;
+	if(xQueueReceive(usartQueue, (void*) &(manipulator->msgReceived), TIMEOUT/portTICK_PERIOD_MS))
+	{
+		switch(manipulator->msgReceived.type)
+		{
+		case TOOL:
+		{
+			double vels[NUM_JOINTS];
+			for(int i = 0; i < manipulator->msgReceived.length/2; ++i)
+			{
+				vels[i] = (double)(manipulator->msgReceived.params[i] |
+								   manipulator->msgReceived.params[i+1] << 8);
+				manipulator->setMode(FREE);
+			}
+			manipulator->setJointsVel(vels);
+			return TOOL_STATE;
+		}
+		case JOINT:
+		{
+			return JOINT_STATE;
+		}
+		case TEST:
+		{
+			return TEST_STATE;
+		}
+		default:
+			return IDLE_STATE;
+		}
+	}
+	return IDLE_STATE;
 }
+
 

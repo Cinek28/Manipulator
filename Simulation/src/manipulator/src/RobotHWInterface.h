@@ -21,12 +21,6 @@ using joint_limits_interface::SoftJointLimits;
 static const double POSITION_STEP_FACTOR = 10;
 static const double VELOCITY_STEP_FACTOR = 10;
 
-enum CONTROL_MODE
-{
-    TOOL_MODE = 0,
-    JOINT_MODE = 1
-};
-
 enum CONTROLLER_TYPE
 {
     VELOCITY_CONTROLLER = 0,
@@ -66,7 +60,7 @@ protected:
     KDL::Chain kinematicChain;
 
     RobotSerialComm robot;
-    CONTROL_MODE mode = TOOL_MODE;
+    ManipulatorCmd mode = TOOL;
     CONTROLLER_TYPE controller = VELOCITY_CONTROLLER;
 
     double p_error_, v_error_, e_error_;

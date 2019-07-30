@@ -23,12 +23,12 @@
 
 enum State
 {
-	INIT_STATE = 0,
-	RESET_STATE,
-	IDLE_STATE,
-	JOINT_STATE,
+	JOINT_STATE = 0,
+	TOOL_STATE,
 	TEST_STATE,
-	SIM_STATE
+	IDLE_STATE,
+	INIT_STATE,
+	RESET_STATE,
 };
 
 const char* stateToStr(State state);
@@ -70,6 +70,10 @@ private:
 	State endState = RESET_STATE;
 	handler_t stateHandlers[NUM_STATES];
 
+	ManipulatorMsg msgReceived;
+
+	volatile double velocities[NUM_JOINTS] = {0.0};
+
 	State getCurrentState(void);
 };
 
@@ -77,7 +81,7 @@ State runInit(void* params);
 State runReset(void* params);
 State runIdle(void* params);
 State runJointMode(void* params);
+State runToolMode(void* params);
 State runTestMode(void* params);
-State runSimMode(void* params);
 
 #endif /* SRC_MANIPULATORSTATEMACHINE_H_ */

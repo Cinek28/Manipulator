@@ -37,7 +37,7 @@ double ServoMotor::getVelocity()
 {
 	int16_t value;
 	getServoCurrentVelocity(servoID, &value);
-	return (double)value; //TODO
+	return currentVel = (double)value; //TODO
 }
 
 void ServoMotor::setCurrentMode(const ServoMotor::MODE& mode)

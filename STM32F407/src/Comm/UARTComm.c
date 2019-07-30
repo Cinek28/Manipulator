@@ -10,7 +10,7 @@
 
 bool getAndCheckResponse (const uint8_t servoId, ServoResponse* msg)
 {
-	return xQueueReceive(rs485Queue, (void*) msg, 50/portTICK_PERIOD_MS);
+	return xQueueReceive(rs485Queue, (void*) msg, 20/portTICK_PERIOD_MS);
 }
 
 void USART1_IRQHandler (void)
@@ -19,7 +19,7 @@ void USART1_IRQHandler (void)
 	{
 		BaseType_t taskWoken = pdFALSE;
 		if(getServoResponseByte(&servoBuffer, &servoMsg))
-			xQueueSendFromISR(rs485Queue, &msg, &taskWoken);
+			xQueueSendFromISR(rs485Queue, &servoMsg, &taskWoken);
 
         USART_ClearITPendingBit(USART1, USART_FLAG_RXNE);
         portYIELD_FROM_ISR(taskWoken);
@@ -69,8 +69,7 @@ void USART2_IRQHandler (void)
 	    		calcChecksum += msg.params[i];
 	    	}
 	    	calcChecksum = ~calcChecksum;
-	    	if(!(calcChecksum != msg.checksum ||
-	    			(msg.type == CHANGE_STATE && msg.length != 1)))
+	    	if(calcChecksum == msg.checksum)
 	    	{
 	    		xQueueOverwriteFromISR(usartQueue, &msg, &taskWakeByQueue);
 	    		xTaskNotifyFromISR(*wakeTaskHandle, 0, eNoAction, &taskWakeByNotify);

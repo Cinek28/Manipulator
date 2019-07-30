@@ -44,10 +44,10 @@ double Motor::getVelocity()
 	}
 
 	encoder.previousCount = *encoder.currentCount;
-	return velocity / encoder.range * 1000 * 2 * 3.1415;
+	return currentVel = velocity / encoder.range * 1000 * 2 * 3.1415; //TODO period should be 1kHz
 }
 
-void Motor::calcPWM(const double& targetVelocity)
+void Motor::calcPWM(const double& targetVelocity, const double& currentVelocity)
 {
 
 	if(encoder.currentCount == nullptr || mode == FREE)
@@ -56,7 +56,7 @@ void Motor::calcPWM(const double& targetVelocity)
 		return;
 	}
 
-	int16_t error = targetVelocity - getVelocity();
+	int16_t error = targetVelocity - currentVelocity;
 	errorSum += error;
 	if (errorSum > MAX_PWM_VALUE)
 		errorSum = MAX_PWM_VALUE;

@@ -25,8 +25,9 @@ public:
 
 	virtual ~Motor(){};
 
-	virtual void initPID(const uint16_t& k_p, uint16_t k_d,
-			const uint16_t& k_i);
+	virtual void initPID(const uint16_t& k_p,
+						 uint16_t k_d,
+						 const uint16_t& k_i);
 
 	virtual void setRatio(const double& ratio);
 	virtual void setMaxVelocity(const double& max_vel);
@@ -49,7 +50,10 @@ protected:
     int16_t pwm = 0;
     double maxVel;
 
-    virtual void calcPWM(const double& targetVelocity);
+    double currentVel;
+
+    virtual void calcPWM(const double& targetVelocity,
+    					 const double& currentVelocity);
 };
 
 #endif /* SRC_MOTOR_H_ */

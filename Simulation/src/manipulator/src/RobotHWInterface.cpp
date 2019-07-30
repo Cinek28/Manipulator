@@ -125,8 +125,8 @@ void RobotHWInterface::update(const ros::TimerEvent &e)
 void RobotHWInterface::read()
 {
     ManipulatorMsg msg;
-
-    if(robot.isOpened() && robot.readData(&msg))
+    
+    if(isRobotConnected() && robot.readData(&msg))
     {
         for (int i = 0; i < numJoints; i++)
         {
@@ -138,7 +138,7 @@ void RobotHWInterface::read()
 void RobotHWInterface::write(ros::Duration elapsed_time)
 {
 //    positionJointSoftLimitsInterface.enforceLimits(elapsed_time);
-    if(!isRobotConnected())
+    if(!isRobotConnected() || mode == IDLE)
     {
         for(int i = 0; i < numJoints; ++i)
         {
@@ -149,7 +149,7 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
     else
     {   ManipulatorMsg msg;
         uint16_t velocity = 0;
-        msg.type = MOVE;
+        msg.type = mode;
         msg.length = 2*numJoints;
         msg.checksum = msg.type + msg.length;
         for (int i = 0; i < numJoints; i++)
@@ -194,7 +194,7 @@ KDL::JntArray RobotHWInterface::solveIndirectKinematics(const geometry_msgs::Twi
 
 void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg) {
     
-    if(mode == TOOL_MODE)
+    if(mode == TOOL)
     {
         // Calculate indirect kinematics
         jointVelocities = solveIndirectKinematics(msg);
@@ -209,13 +209,14 @@ void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg) {
         jointVelocities(5) = msg.angular.z;
     }
 
+    if(fabs(jointVelocities(i)) < 0.5)
+            jointVelocities(i) = 0.0;
+
     for (int i = 0; i < 6; ++i)
     {
         std_msgs::Float64 velocity;
-        if(fabs(jointVelocities(i)) < 0.5)
-            jointVelocities(i) = 0.0;
         velocity.data = jointVelocities(i);
-        commandPub[i].publish(velocity);
+        // commandPub[i].publish(velocity);
     }
 
 }

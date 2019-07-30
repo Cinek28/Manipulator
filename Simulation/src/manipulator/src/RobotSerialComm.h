@@ -16,9 +16,10 @@
 
 typedef enum ManipulatorCmd
 {
-	TEST_STATE = 0,
-	JOINT_STATE = 1,
-	IDLE_STATE = 2
+	JOINT = 0,
+	TOOL = 1,
+	TEST = 2,
+	IDLE = 3
 } ManipulatorCmd;
 
 struct ManipulatorMsg

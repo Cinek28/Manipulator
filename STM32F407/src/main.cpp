@@ -47,7 +47,12 @@ SOFTWARE.
 
 TaskHandle_t* stateMachineHandle = NULL;
 TaskHandle_t* wakeTaskHandle = NULL;
-void stateMachineHandler(void*);
+
+TaskHandle_t* velocitySendTask = NULL;
+volatile float velocities[6];
+
+void stateMachineHandler(void* args);
+void velocitySendHandler(void* args);
 
 QueueHandle_t usartQueue;
 QueueHandle_t rs485Queue;
@@ -69,12 +74,18 @@ int main(void)
   usartQueue = xQueueCreate(1, sizeof(ManipulatorMsg*));
   rs485Queue = xQueueCreate(1, sizeof(ServoResponse*));
 
+  ManipulatorStateMachine stMachine;
+
   if(usartQueue != NULL && rs485Queue != NULL)
   {
 	  xTaskCreate(stateMachineHandler, "StateMachine",
 			  	  20*configMINIMAL_STACK_SIZE,
-				  NULL, 2, stateMachineHandle);
+				  (void*)&stMachine , 2, stateMachineHandle);
 	  wakeTaskHandle = stateMachineHandle;
+
+	  xTaskCreate(velocitySendHandler, "VelocitySend",
+		  	  	  5*configMINIMAL_STACK_SIZE,
+				  (void*)&stMachine, 1, velocitySendTask);
 
 	  vTaskStartScheduler();
   }
@@ -85,15 +96,51 @@ int main(void)
   }
 }
 
-void stateMachineHandler(void*)
+void stateMachineHandler(void* args)
 {
-	ManipulatorStateMachine manipulator;
-	manipulator.init();
-	while(manipulator.run());
-	manipulator.emergencyStop();
+	ManipulatorStateMachine* stateMachine = ManipulatorStateMachine*(args);
+	while(stateMachine->run());
+	stateMachine->emergencyStop();
 	_ERR("State machine broke. Fatal error. Reset device.")
 	vTaskDelete(NULL);
 }
+
+void velocitySendHandler(void* args)
+{
+	ManipulatorStateMachine* stateMachine = (ManipulatorStateMachine*)args;
+	ManipulatorMsg msgSend;
+	TickType_t lastWakeTime;
+	const TickType_t frequency = 500;
+	lastWakeTime = xTaskGetTickCount();
+	while(1)
+	{
+		msgSend.type = stateMachine->currentState();
+
+		if(msgSend.type == RESET)
+			break;
+		if(msgSend.type == INIT_STATE)
+			continue;
+
+		msgSend.length = 2*NUM_JOINTS;
+		msgSend.checksum = msgSend.type + msgSend.length;
+		for(int i = 0; i < NUM_JOINTS; ++i)
+		{
+			stateMachine->joints[i]->getVelocity();
+			msgSend.params[i] = (uint8_t)stateMachine->joints[i]->currentVel;
+			msgSend.params[i+1] = (uint8_t)(stateMachine->joints[i+1]->currentVel >> 8);
+			msgSend.checksum += msgSend.params[i] + msgSend.params[i+1];
+		}
+		msgSend.checksum ~= msgSend.checksum;
+		send_char(msgSend.type, USART2);
+		send_char(msgSend.length, USART2);
+		for(int i = 0; i < 2*NUM_JOINTS; ++i)
+			send_char(msgSend.params[i], USART2);
+		send_char(msgSend.checksum, USART2);
+		vTaskDelayUntil(&lastWakeTime, frequency);
+	}
+	vTaskDelete(NULL);
+}
+
 
 #ifdef __cplusplus
 extern "C" {
