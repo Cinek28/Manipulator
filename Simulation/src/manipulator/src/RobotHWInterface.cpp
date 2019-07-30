@@ -209,11 +209,10 @@ void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg) {
         jointVelocities(5) = msg.angular.z;
     }
 
-    if(fabs(jointVelocities(i)) < 0.5)
-            jointVelocities(i) = 0.0;
-
     for (int i = 0; i < 6; ++i)
     {
+	if(fabs(jointVelocities(i)) < 0.5)
+            jointVelocities(i) = 0.0;
         std_msgs::Float64 velocity;
         velocity.data = jointVelocities(i);
         // commandPub[i].publish(velocity);

@@ -6,7 +6,7 @@
     <p>This package contains configuration data, 3D models and launch files
 for manipulator robot</p>
   </description>
-  <author>Cinek2</author>
+  <author>Marcin Baran</author>
   <maintainer email="marcinb280@op.pl" />
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>

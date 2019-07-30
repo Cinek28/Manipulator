@@ -42,5 +42,5 @@ endforeach(dir)
 
 add_executable(kdl_dkin src/kdl_dkin.cpp)
 target_link_libraries(kdl_dkin ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} )
-add_executable(RobotHWInterfaceNode src/RobotHWInterfaceNode.cpp src/RobotHWInterface.cpp)
+add_executable(RobotHWInterfaceNode src/RobotHWInterfaceNode.cpp src/RobotHWInterface.cpp src/RobotSerialComm.cpp src/CyclicBuffer.c)
 target_link_libraries(RobotHWInterfaceNode ${catkin_LIBRARIES} )
