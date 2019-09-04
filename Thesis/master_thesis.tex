@@ -85,6 +85,7 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning,shapes,arrows,calc,decorations.markings,shadows}
 \usepackage[hidelinks]{hyperref}
+\usepackage{listings}
 
 
 %\geometry{a4paper, left=20mm, right=20mm, top=25mm, bottom=25mm}%footskip=60pt}% don't set this manually else geometry won't know!
@@ -172,11 +173,10 @@ Dokument ten stanowi raport z przeprowadzonej pracy magisterskiej. Składa się 
 \item rozdział 2 zawiera wprowadzenie teoretyczne do dziedziny kinematyki mechanizmów wieloczłonowych; zostały w nim opisane zadania proste i odwrotne kinematyki manipulatorów oraz notacja Denavita-Hartenberga użyta do opisu konfiguracji manipulatora,
 \item rozdział 3 opisuje konstrukcje i technologie użyte w projekcie autorskiego manipulatora szeregowego,
 \item rozdział 4 przedstawia architekturę oprogramowania wykorzystując koncepcję agenta upostaciowionego i język opisu sprzętowego SysML,
-\item rozdział 5 ukazuje działanie oprogramowania kontrolera robota opartego na systemie czasu rzeczywistego FreeRTOS,
-\item rozdział 6 przedstawia działanie sterownika i oprogramowania symulacyjnego stworzonego z pomocą pakietu ROS oraz środowiska Gazebo,
-\item rozdział 7 stanowi szczegółowy opis przeprowadzonych testów ruchu manipulatora w środowisku symulacyjnym Gazebo,
-\item rozdział 8 opisuje wyniki zebrane podczas testów oraz analizę dokładności wykonywania zadanego sterowania,
-\item rozdział 9 poświęcony jest podsumowaniu pracy.  
+\item rozdział 5 przedstawia implementację systemu: działanie oprogramowania kontrolera robota opartego na systemie czasu rzeczywistego FreeRTOS oraz sterownika i oprogramowania symulacyjnego stworzonego z pomocą pakietu ROS oraz środowiska Gazebo,
+\item rozdział 6 stanowi szczegółowy opis przeprowadzonych testów ruchu manipulatora w środowisku symulacyjnym Gazebo,
+\item rozdział 7 opisuje wyniki zebrane podczas testów oraz analizę dokładności wykonywania zadanego sterowania,
+\item rozdział 8 poświęcony jest podsumowaniu pracy.  
 \end{itemize} 
 
 \subsection{Analiza trendów}
@@ -197,7 +197,7 @@ Zieliński w swoim artykule \cite{ramowezielinski} wskazuje na ewolucje podejśc
 \item programowanie offline (tekstowe)- polega na wykorzystaniu specjalnie przygotowanego języka komend i struktur do definiowania rodzaju i punktów docelowych ruchu robota
 \end{itemize}
 
-Rozszerzenie programowania nietekstowego o formę programowania offline spowodowało powstanie hybrydowej metody programowania robotów, która jest dziś szeroko stosowana w przemyśle. Jednym z przykładów takiego rozwiązania jest KUKA Robot Language (KRL) \cite{kukawebsite} dedykowany do robotów firmy KUKA. Jednakże ze względu na pojawiające się nowe rodzaje robotów ta metoda wymaga ciągłej zmiany języków programowania, a także ich interpreterów.
+Rozszerzenie programowania nietekstowego o formę programowania offline spowodowało powstanie hybrydowej metody programowania robotów, która jest dziś szeroko stosowana w przemyśle. Jednym z przykładów takiego rozwiązania jest KUKA Robot Language (KRL)  dedykowany do robotów firmy KUKA. Jednakże ze względu na pojawiające się nowe rodzaje robotów ta metoda wymaga ciągłej zmiany języków programowania, a także ich interpreterów.
 
 W książce Kozłowskiego i innych \cite{systemkozlowski} w rozdziale poświęconym systemom programowania robotów autorzy wskazują uwagę na fakt, że w pracach badawczych dotyczących algorytmów sterowania i planowania trajektorii często używane są roboty przemysłowe. Dużą przeszkodą w prowadzeniu takich prac jest zamknięta konstrukcja sterownika robota przemysłowego. W dodatku projektowane są one do wykonywania określonych i powtarzalnych zadań, stąd są mało przydatne w celach badawczych. Z tego względu autorzy zaproponowali połączenie robota posiadającego własny sterownik z komputerem PC stosując jedno z dwóch rozwiązań:
 
@@ -379,12 +379,12 @@ można przedstawić rozwiązywany układ równań jako:
 					\end{bmatrix} = 0_{nx1}
 \end{equation}
 
-Mając postawiony problem w tej postaci można rozwiązać go stosując na przykład metodę Newtona-Rhapsona. Metody numeryczne są często wykorzystywane do rozwiązywania zadania odwrotnego w oprogramowaniu symulacyjnym (pakiet ROS także posiada biblioteki na to pozwalające).
+Mając postawiony problem w tej postaci można rozwiązać go stosując na przykład metodę Newtona-Rhapsona. Dodatkowo różniczkując powyższe równanie po czasie otrzymujemy zadanie odwrotne kinematyki o prędkościach, po rozwiązaniu którego wyznaczyć można prędkości każdego złącza niezbędne do uzyskania zadanej prędkości końcówki robota. Metody numeryczne są często wykorzystywane do rozwiązywania zadania odwrotnego w oprogramowaniu symulacyjnym (pakiet ROS także posiada biblioteki na to pozwalające).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \vspace*{1.5 cm}
-\section{Opis narzędzi}
+\section{Opis narzędzi} \label{tools}
 \vspace{1.5 cm}
 
 \subsection{Sprzęt}
@@ -408,13 +408,42 @@ Konstrukcja stworzona była biorąc pod uwagę regulaminowe wymagania i ogranicz
 \item moźliwość wykonywania precyzyjnych zadań, takich jak odkręcanie zaworów, przełączanie przycisków, unoszenie przedmiotów o nieregularnym kształcie
 \end{itemize}
 
-Skonstruowany manipulator wykorzystuje przeguby obrotowe do poruszania każdym stopniem swobody. Ze wzgledu na powyższe wymagania mechanizm został złożony wykorzystując elementy z giętej blachy aluminiowej oraz elementy wytworzone metodą druku 3D. Jako napędów do poruszania przegubów użyto 3 silników DC, 1 siłownika i 2 serwomechanizmów Dynamixel RX-64 \cite{servo}. Manipulator zasilany jest napieciem 12 V. Sterowany jest za pomocą mikrokontrolera STM32F407-VET. Informacje o aktualnej prędkości i pozycji poszczególnych przegubów uzyskiwane są wykorzystując odczyty z enkoderów magnetycznych. Robot wyposażony jest w 2 interfejsy komunikacyjne: UART oraz CAN. Ponadto do komunikacji z serwomechanizmami wykorzystywany jest interfejs RS-485. Schemat elektroniczny manipulatora przedstawia poniższy diagram:
+Skonstruowany manipulator wykorzystuje przeguby obrotowe do poruszania każdym stopniem swobody. Ze wzgledu na powyższe wymagania mechanizm został złożony wykorzystując elementy z giętej blachy aluminiowej oraz elementy wytworzone metodą druku 3D. Jako napędów do poruszania przegubów użyto 3 silników DC, 1 siłownika i 2 serwomechanizmów Dynamixel RX-64 \cite{servo}. Manipulator zasilany jest napieciem 12 V. Sterowany jest za pomocą mikrokontrolera STM32F407-VET. Informacje o aktualnej prędkości i pozycji poszczególnych przegubów uzyskiwane są wykorzystując odczyty z enkoderów magnetycznych. Tam gdzie było to możliwe enkodery montowane były bezpośrednio na przegubie. W ten sposób mierzona jest prędkość członu, a nie wału silnika. W miejscach gdzie nie było to możliwe istnieje potrzeba uwzględnienia przełożeń napędów, co zostało pokazane w tabeli:
 
+\begin{table}[htb!]
+\begin{center}
+\caption{Przełożenia uwzględniane przy odczycie prędkości związane z montażem enkoderów}
+\begin{tabular}{ | c | c |}
+\hline
+ Stopień swobody & Przełożenie \\ 
+\hline
+ 1 & $131:2$ \\ 
+\hline
+ 2 & $1:1$ \\
+\hline
+ 3 & $1:1$  \\
+\hline
+ 4 & $131:1$  \\ 
+\hline
+ 5 & $1:1$  \\
+\hline
+ 6 & $1:1$ \\
+ \hline
+\end{tabular}
+\end{center}
+\end{table}
 
+Robot wyposażony jest w 2 interfejsy komunikacyjne: UART oraz CAN. Ponadto do komunikacji z serwomechanizmami wykorzystywany jest interfejs RS-485. Uproszczony schemat elektroniczny manipulatora przedstawia poniższy diagram:
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=1.0\linewidth]{images/electronic_scheme.png}
+\caption{Schemat komunikacji mikrokontrolera sterującego robotem}
+\label{fig:electronic_scheme}
+\end{figure}
 
 Konfigurację poszczególnych członów manipulatora opisano wykorzystując następujące parametry Denavita-Hartenberga (zgodnie z ustalonymi układami współrzędnych każdego z członów):
 
-%TODO : Uzupełnić parametry!
 \begin{table}[htb!]
 \begin{center}
 \caption{Parametry Denavita-Hartenberga manipulatora}
@@ -422,17 +451,17 @@ Konfigurację poszczególnych członów manipulatora opisano wykorzystując nast
 \hline
  i & $\alpha_{i-1} [rad]$ & $a_{i-1} [m]$ & $\delta_{i} [m]$ & $\theta_{i} [rad]$ \\ 
 \hline
- 1 & $\pi/2$ & 0 & 0.13 & $\theta_{1}$ \\ 
+ 1 & $\pi/2$ & 0 & 0.2005 & $\theta_{1}$ \\ 
 \hline
- 2 & $\pi/2$ & 0 & 0.0705 & $\theta_{2} + \pi/2$ \\
+ 2 & 0 & 0.6 & 0 & $\theta_{2} + \pi/2$ \\
 \hline
- 3 & c & c & c & $\theta_{3}$ \\
+ 3 & -$\pi/2$ & 0.408 & 0 & $\theta_{3}-\pi/2$ \\
 \hline
- 4 & c & c & c & $\theta_{4}$ \\ 
+ 4 & $\pi/2$ & 0 & 0.129 & $\theta_{4}$ \\ 
 \hline
- 5 & c & c & c & $\theta_{5}$ \\
+ 5 & -$\pi/2$ & 0 & 0 & $\theta_{5}$ \\
 \hline
- 6 & c & c & c & $\theta_{6}$ \\
+ 6 & 0 & 0 & 0.15 & $\theta_{6}$ \\
  \hline
 \end{tabular}
 \end{center}
@@ -461,7 +490,7 @@ SysML (ang. System Modeling Language)\cite{sysml} jest jedną z metod graficzneg
 \item diagramy struktury.
 \end{itemize}
 
-W pracy wykorzystano diagram przypadków użycia (ang. Use Case Diagram), diagram maszyny stanowej (ang. State Machine Diagram), diagram bloków wewnętrznych (ang. Internal Block Diagram), rozszerzony diagram czynności (ang. Activity Diagram) oraz diagram sekwencji (ang. Sequence Diagram).
+W pracy wykorzystano diagram przypadków użycia (ang. Use Case Diagram), diagram maszyny stanowej (ang. State Machine Diagram), diagram klas. 
 
 \subsubsection{Koncepcja agenta upostaciowionego}
 
@@ -470,7 +499,7 @@ W pracy wykorzystano również koncepcje agenta upostaciowionego \cite{embodieda
 \begin{figure}[hbt!]
 \centering
 \includegraphics[width=0.6\linewidth]{images/embodied_agent.png}
-\caption{Schemat agenta upostaciowionego \textit{ (Źródło: TODO) } }
+\caption{Schemat agenta upostaciowionego \textit{ (Źródło: \cite{thesiswegierek}) } }
 \label{fig:embodied_agent}
 \end{figure}
 
@@ -497,15 +526,6 @@ do tworzenia i rozwijania oprogramowania dla robotów. Zawiera biblioteki i narz
 \item Serwer parametrów (ang. parameter server ) - służy do przechowywania danych, do których odnosić może się każdy węzeł za pomocą klucza.
 \end{itemize}
 
-Przykładowy schemat połączeń/komunikacji pomiędzy węzłami w ROS przedstawia poniższy diagram:
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\linewidth]{images/ros_nodes.png}
-\caption{Przykładowy schemat komunikacji międzyprocesowej w ROS}
-\label{fig:ros_nodes}
-\end{figure}
-
 W celu ujednolicenia sposobu definiowania kinematyki, dynamiki i wyglądu robotów oraz udostepnienia możliwości dzielenia się modelami przygotowanymi przez różnych użytkowników zdefiniowano standard opisu URDF (Unified Robotic Description Format) \cite{urdf}. Pliki modeli URDF są to pliki XML, w których definiowane są parametry robota, takie jak:
 \begin{itemize}
 \item położenia i orientacje początkowe poszczególnych członów i związanych z nimi układów odniesienia,
@@ -524,9 +544,9 @@ Gazebo jest darmowym symulatorem dynamiki 3D stworzonym na potrzeby rozwoju robo
 W celu połączenia oprogramowania symulacyjnego i sterownika robota użyto bibliotekę ros\_control \cite{roscontrol} \cite{roscontrolart}. Jest ona dedykowana do użytku z pakietem ROS i umożliwia szybką implementację oprogramowania sterującego. Biblioteka ta jest szablonem kontrolera robota, który można wykorzystać do własnego projektu. Ponadto posiada zestaw zaimplementowanych, szeroko używanych sterowników ruchu członów robota, które wykorzystują regulator PID. Są to między innymi:
 
 \begin{itemize}
-\item velocity\_controllers - sterowanie prędkością/pozycją/mocą na podstawie zadanej prędkości;
-\item position\_controllers - sterowanie prędkością/pozycją/mocą na podstawie zadanej pozycji;
-\item effort\_controllers - sterowanie prędkością/pozycją/mocą na podstawie zadanej mocy;
+\item velocity\_controllers - sterowanie prędkością/pozycją/mocą na podstawie zadanej prędkości,
+\item position\_controllers - sterowanie prędkością/pozycją/mocą na podstawie zadanej pozycji,
+\item effort\_controllers - sterowanie prędkością/pozycją/mocą na podstawie zadanej mocy.
 \end{itemize}
 
 Dodatkowo biblioteka pozwala na zarządzanie sterownikami w czasie działania za pomocą controller\_managera, który odpowiedzialny jest za nadzorowanie pracy sterowników, inicjalizowanie ich oraz zajmowaniu się sytuacjami konfliktowymi między nimi.
@@ -585,7 +605,7 @@ Ponadto FreeRTOS oferuje dodatkowe funkcjonalności takie jak:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \vspace*{1.5 cm}
-\section{Specyfikacja systemu}
+\section{Specyfikacja systemu} \label{system_arch}
 \vspace{1.5 cm}
 W poniższym rozdziale przedstawiono specyfikację systemu sterowania manipulatorem o 6 stopniach swobody. Opisano założenia, przypadki użycia i wyodrębniono agenty systemu.
 \subsection{Założenia i wymagania}
@@ -659,11 +679,11 @@ Agent $a_{sim}$ ma wyspecyfikowany jeden rzeczywisty efektor jakim jest ekran mo
 \label{fig:agent_sim}
 \end{figure}
 
-Agenty oraz ich podsystemy przesyłają dane za pośrednictwem buforów wejściowych i wyjściowych. Poniżej przedstawiono tabele \ref{tab:comrobotsim}, która pokazuje komunikację międzyagentową oraz tabele \ref{tab:comrobot} i \ref{tab:comsim} dotyczące komunikacji wewnątrz odpowiednio agentów $a_{robot}$ i $a_{sim}$. 
+Agenty oraz ich podsystemy przesyłają dane za pośrednictwem buforów wejściowych i wyjściowych. Poniżej przedstawiono tabele \ref{table:comrobotsim}, pokazującą komunikację międzyagentową oraz tabele  dotyczące komunikacji wewnątrz agentów $a_{robot}$ i $a_{sim}$. 
 
-\begin{table}[htb!] \label{comrobotsim}
+\begin{table}[H]
 \begin{center}
-\caption{Komunikacja pomiędzy agentami $a_{robot}$ i $a_{sim}$}
+\caption{Komunikacja pomiędzy agentami $a_{robot}$ i $a_{sim}$} \label{table:comrobotsim}
 \begin{tabular}{ | l | l | p{6cm} |}
 \hline
  Bufor wyjściowy & Bufor wejściowy & Dane \\ 
@@ -677,9 +697,9 @@ Agenty oraz ich podsystemy przesyłają dane za pośrednictwem buforów wejścio
 \end{table}
 
 \begin{table}[htb!]
-\label{comrobot}
 \begin{center}
 \caption{Komunikacja podsystemów agenta $a_{robot}$}
+\label{comrobot}
 \begin{tabular}{ | l | l | p{6cm} |}
 \hline
  Bufor wyjściowy & Bufor wejściowy & Dane \\ 
@@ -701,9 +721,9 @@ Agenty oraz ich podsystemy przesyłają dane za pośrednictwem buforów wejścio
 \end{table}
 
 \begin{table}[htb!]
-\label{comsim}
 \begin{center}
 \caption{Komunikacja podsystemów agenta $a_{sim}$}
+\label{comsim}
 \begin{tabular}{ | l | l | p{6cm} |}
 \hline
  Bufor wyjściowy & Bufor wejściowy & Dane \\ 
@@ -725,7 +745,7 @@ Agenty oraz ich podsystemy przesyłają dane za pośrednictwem buforów wejścio
 \end{table}
 
 \subsubsection{Podsystem sterowania $c_{robot}$}
-W podsystemie sterowania wyodrębniono 6 stanów. Na początku odbywa się inicjalizacja peryferiów robota, synchronizacja napędów i ich zatrzymanie w stanie \textit{INIT}. Jeżeli wszystkie peryferia zostaną zainicjalizowane poprawnie i nie ma potrzeby ponownego ich uruchamiania lub uśpienia kontrolera (\textbf{~r\_s}) wtedy następuje przejście do stanu \textit{IDLE}. W tym stanie system oczekuje na komunikację z agentem $a_{sim}$ jednocześnie utrzymując zadane prędkości zerowe na silnikach (zatrzymanie). W przypadku gdy następuje potrzeba ponownego ustawienia peryferiów (\textbf{r\_s}) system przechodzi do stanu \textit{RESET}, w którym następuje uśpienie, a w momencie gdy możliwa jest dalsza praca wykonywana jest reinicjalizacja i powrót do stanu \textit{IDLE}. Jeżeli w stanie \textit{IDLE} nawiązana zostanie komunikacja (\textbf{e\_s}) to w zależności od trybu pracy (\textbf{j\_m} lub \textbf{t\_m}) wykonywane jest zadane sterowanie odpowiednio we współrzędnych złączowych (stan \textit{JOINT\_MODE}) lub narzędziowych (stan \textit{TOOL\_MODE}. Każda zmiana trybu pracy lub utrata komunikacji powoduje zatrzymanie napędów (stan \textit{STOP}) i powrót do stanu \textit{IDLE}.
+W podsystemie sterowania wyodrębniono 6 stanów. Na początku w stanie \textit{INIT} odbywa się inicjalizacja peryferiów robota, synchronizacja napędów i ich zatrzymanie. Jeżeli wszystkie peryferia zostaną zainicjalizowane poprawnie i nie ma potrzeby ponownego ich uruchamiania lub uśpienia kontrolera (\textbf{$\sim$r\_s}) wtedy następuje przejście do stanu \textit{IDLE}. W tym stanie system oczekuje na komunikację z agentem $a_{sim}$ jednocześnie utrzymując zadane prędkości zerowe na silnikach (zatrzymanie). W przypadku gdy następuje potrzeba ponownego ustawienia peryferiów (\textbf{r\_s}) system przechodzi do stanu \textit{RESET}, w którym następuje uśpienie, a w momencie gdy możliwa jest dalsza praca wykonywana jest reinicjalizacja i powrót do stanu \textit{IDLE}. Jeżeli w stanie \textit{IDLE} nawiązana zostanie komunikacja (\textbf{e\_s}) to w zależności od trybu pracy (\textbf{j\_m} lub \textbf{t\_m}) wykonywane jest zadane sterowanie odpowiednio we współrzędnych złączowych (stan \textit{JOINT\_MODE}) lub narzędziowych (stan \textit{TOOL\_MODE}. Każda zmiana trybu pracy lub utrata komunikacji powoduje zatrzymanie napędów (stan \textit{STOP}) i powrót do stanu \textit{IDLE}.
 
 \begin{figure}[hbt!]
 \centering
@@ -763,84 +783,472 @@ Poniżej przedstawiono opis zachowań podsystemu sterowania $c_{robot}$:
 \paragraph{Inicjalizacja ($^cB_{robot,0}$)}
 
 \begin{itemize}
-\item warunek początkowy: 
-\item warunek końcowy:
-\item funkcja przejścia:
+\item warunek początkowy: włączenie zasilania
+\item warunek końcowy: inicjalizacja zakończona
+\item funkcja przejścia $^cf_{robot,0}$:
+
+Po włączeniu urządzenia następuje uruchomienie wymaganych do działania zegarów, peryferiów i oprogramowania sterującego.
 \end{itemize}
 
 \paragraph{Bezczynność ($^cB_{robot,1}$)}
 
 \begin{itemize}
-\item warunek początkowy: 
-\item warunek końcowy:
-\item funkcja przejścia:
+\item warunek początkowy: inicjalizacja przebiegła pomyślnie lub zatrzymano wszystkie napędy
+\item warunek końcowy: przesłano do bufora $^T_xc_{robot}$ polecenie ruchu lub wymagany reset
+\item funkcja przejścia $^cf_{robot,1}$:
+
+Zachowanie polega na oczekiwaniu na otrzymanie instrukcji sterowania przesyłanej przez bufor transmisyjny $^T_xc_{robot}$ przy jednoczesnym utrzymywaniu i informowaniu o bieżącej, stałej (zerowej) prędkości wszystkich członów.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.5\linewidth]{images/state_idle.png}
+\caption{Funkcja przejścia $^cf_{robot,1}$ }
+\label{fig:state_idle}
+\end{figure}
+
 \end{itemize}
 
 \paragraph{Sterowanie w trybie złączowym ($^cB_{robot,2}$)}
 
-\begin{itemize}
-\item warunek początkowy: 
-\item warunek końcowy:
-\item funkcja przejścia:
+\begin{itemize} 
+\item warunek początkowy: odebranie komendy ruchu w trybie złączowym
+\item warunek końcowy: przerwanie komunikacji lub odebranie komendy ruchu w innym trybie
+\item funkcja przejścia $^cf_{robot,2}$:
+
+Zachowanie polega na przetwarzaniu otrzymywanych danych sterujących przesyłanych przez bufor transmisyjny $^T_xc_{robot}$ i wysyłaniu zadanych prędkości do efektorów oraz informowaniu o aktualnym stanie manipulatora. W trybie złączowym możliwe jest poruszanie jednocześnie tylko jednym członem, więc komenda ruchu sprawdzana jest pod tym kątem. 
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.3\linewidth]{images/state_joint.png}
+\caption{Funkcja przejścia $^cf_{robot,2}$ }
+\label{fig:state_joint}
+\end{figure}
+
 \end{itemize}
 
 \paragraph{Sterowanie w trybie narzędziowym ($^cB_{robot,3}$)}
 
-\begin{itemize}
-\item warunek początkowy: 
-\item warunek końcowy:
-\item funkcja przejścia:
+\begin{itemize} 
+\item warunek początkowy: odebranie komendy ruchu w trybie narzędziowym
+\item warunek końcowy: przerwanie komunikacji lub odebranie komendy ruchu w innym trybie
+\item funkcja przejścia $^cf_{robot,3}$:
+
+Zachowanie polega na przetwarzaniu otrzymywanych danych sterujących przesyłanych przez bufor transmisyjny $^T_xc_{robot}$ i wysyłaniu zadanych prędkości do efektorów oraz informowaniu o aktualnym stanie manipulatora. 
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.3\linewidth]{images/state_tool.png}
+\caption{Funkcja przejścia $^cf_{robot,3}$ }
+\label{fig:state_tool}
+\end{figure}
 \end{itemize}
 
 \paragraph{Zatrzymanie ($^cB_{robot,4}$)}
 
 \begin{itemize}
-\item warunek początkowy: 
-\item warunek końcowy:
-\item funkcja przejścia:
+\item warunek początkowy: przerwanie komunikacji lub odebranie komendy ruchu w innym trybie
+\item warunek końcowy: -
+\item funkcja przejścia $^cf_{robot,4}$:
+
+Zachowanie polega na bezwzględnym zatrzymaniu wszystkich napędów, czyli wysłaniu do efektorów prędkości zerowych.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.15\linewidth]{images/state_stop.png}
+\caption{Funkcja przejścia $^cf_{robot,4}$ }
+\label{fig:state_stop}
+\end{figure}
 \end{itemize}
 
 \paragraph{Reset ($^cB_{robot,5}$)}
 
 \begin{itemize}
-\item warunek początkowy: 
-\item warunek końcowy:
-\item funkcja przejścia:
+\item warunek początkowy: wykryto błąd lub wymuszono reset
+\item warunek końcowy: wybudzenie i poprawna inicjalizacja
+\item funkcja przejścia $^cf_{robot,5}$:
+
+Zachowanie polega na bezpiecznym wyłączeniu funkcji podsystemu i uśpieniu jego działania w przypadku gdy wykryto błąd lub operacja ta została wymuszona. Podsystem zostaje wybudzony w przypadku uzyskania sygnału do zresetowania funkcjonalności. Następuje wtedy reinicjalizacja i przejście do stanu bezczynności.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.6\linewidth]{images/state_reset.png}
+\caption{Funkcja przejścia $^cf_{robot,5}$ }
+\label{fig:state_reset}
+\end{figure}
+
 \end{itemize}
 
-\subsubsection{Rzeczywiste efektory $E_{robot1..6}$}
+\subsubsection{Rzeczywiste efektory $E_{robot1..7}$}
+
+Rzeczywistymi efektorami są napędy wyposażone w inkrementalne enkodery magnetyczne. Efektory pozwalają na sterowanie prędkością ruchu każdego z członów manipulatora oraz odczytywanie aktualnej prędkości. Sygnałem sterującym jest PWM (Pulse Width Modulation) dla silników prądu stałego oraz odpowiednia komenda ruchu dla serw Dynamixel RX-64. W przypadku efektora $E_{robot7}$ (napędu sterującego otwieraniem i zamykaniem chwytaka) nie ma możliwości odczytu prędkości ze względu na brak enkodera, ani także sprawdzenia stanu (otwarty/zamknięty). Jest to bardzo duża niedogodność. Z tego względu kontrolowanie ruchu chwytaka powinno odbywać się poprzez wizualne sprawdzenie stanu w trakcie ruchu i zatrzymanie go, gdy wykona operacje otwarcia/zamknięcia (przy sterowaniu ręcznym) lub poprzez czasowe nadanie odpowiedniego sygnału sterującego. Czas takiego ruchu powinien być zdefiniowany i znany na podstawie doświadczeń.
 
 \subsubsection{Wirtualne efektory $e_{robot1..6}$}
 
-\subsubsection{Rzeczywisty efektor $E_{robot7}$}
+Wirtualne efektory są regulatorami PID prędkości każdego z napędów i działają na zasadzie sprzężenia zwrotnego od wyznaczonej prędkości na podstawie danych z enkoderów.
 
-\subsubsection{Wirtualny efektor $e_{robot7}$}
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.5\linewidth]{images/state_effector.png}
+\caption{Funkcje przejścia $^ef_{robot,1..6}$ }
+\label{fig:state_effector}
+\end{figure}
 
 \subsubsection{Podsystem sterowania $c_{sim}$}
 
+W podsystemie sterowania wyodrębniono 4 stany. Na początku w stanie \textit{INIT} odbywa się inicjalizacja środowiska symulacyjnego, sterowników urządzeń, a także sterownika ruchu manipulatora. 
+Jeżeli inicjalizacja przebiegła pomyślnie (\textbf{$\sim$r\_s}) następuje przejście do stanu \textit{SIM\_MODE}. W przeciwnym przypadku (\textbf{r\_s}) symulacja zostaje zatrzymana i wyłączona. W stanie \textit{SIM\_MODE} zadane sterowanie robota jest przekazywane tylko i wyłącznie do symulacji. Nie występuje wtedy komunikacja z agentem $a_{robot}$ (rzeczywistym manipulatorem). W tym stanie możliwe jest podejrzenie w jaki sposób poruszać się będzie robot przy zadanym sterowaniu. W przypadku gdy wystąpi żądanie zmiany trybu pracy sterownika (\textbf{c\_m}), możliwa jest komunikacja z robotem (\textbf{c\_n}), a także nie wystąpił żaden błąd w trakcie działania (\textbf{$\sim$r\_s}), następuje przejście do stanu \textit{REAL\_MODE}. Wtedy komendy sterujące wysyłane są do robota i odbierane są dane o jego stanie i prędkościach poszczególnych członów, na podstawie których operuje sterownik ruchu. Ponadto ruch manipulatora jest odzwierciedlany i wizualizowany w symulacji. Przejście spowrotem do stanu \textit{SIM\_MODE} odbywa się gdy utracone jest połączenie (\textbf{$\sim$c\_n}) lub wystąpi żądanie zmiany trybu pracy sterownika (\textbf{c\_m}). W przypadku gdy wystąpi błąd oprogramowania lub wymuszenie zakończenia działania (\textbf{r\_s}) następuje przejście do stanu \textit{STOP}, w którym wysyłana jest komenda zatrzymania robota, a następnie wyłączana jest symulacja i sterownik ruchu.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.5\linewidth]{images/state_sim.png}
+\caption{Automat skończony podsystemu sterowania $c_{sim}$}
+\label{fig:state_sim}
+\end{figure}
+
+\begin{table}[htb!]
+\label{behaviour_sim}
+\begin{center}
+\caption{Zachowania podsystemu sterowania $c_{sim}$ i odpowiadające im stany}
+\begin{tabular}{ | l | l | l |}
+\hline
+ Stan & Zachowanie & Opis \\ 
+\hline
+ $^cS_{sim,0}$ & $^cB_{sim,0}$ & INIT: Inicjalizacja  \\ 
+\hline
+ $^cS_{sim,1}$ & $^cB_{sim,1}$ & SIM\_MODE: Praca w symulacji \\
+\hline
+ $^cS_{sim,2}$ & $^cB_{sim,2}$ & REAL\_MODE: Praca na rzeczywistym robocie \\
+\hline
+ $^cS_{sim,3}$ & $^cB_{sim,3}$ & STOP\_MODE: Zatrzymanie pracy \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\newpage
+\paragraph{Inicjalizacja ($^cB_{sim,0}$)}
+
+\begin{itemize}
+\item warunek początkowy: Uruchomiono symulację
+\item warunek końcowy: inicjalizacja zakończona
+\item funkcja przejścia $^cf_{sim,0}$:
+
+Po włączeniu oprogramowania następuje inicjalizacja środowiska symulacyjnego, sterownika robota i sterowników urządzeń.
+
+\end{itemize}
+
+\paragraph{Praca w symulacji ($^cB_{sim,1}$)}
+
+\begin{itemize}
+\item warunek początkowy: poprawnie zainicjalizowano oprogramowanie lub zmieniono tryb pracy
+\item warunek końcowy: zmiana trybu pracy, wykrycie błędu lub wyłączenie oprogramowania
+\item funkcja przejścia $^cf_{sim,1}$:
+
+Zachowanie polega na wykonywaniu sterowania na podstawie wirtualnego modelu robota. W tym trybie pracy nie występuje komunikacja pomiędzy agentami, a wszystkie komendy ruchu są przedstawiane w symulacji.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.4\linewidth]{images/state_sim_mode.png}
+\caption{Funkcja przejścia $^cf_{sim,1}$ }
+\label{fig:state_sim_mode}
+\end{figure}
+
+\end{itemize}
+
+\paragraph{Praca na rzeczywistym robocie ($^cB_{sim,2}$)}
+
+\begin{itemize}
+\item warunek początkowy: zmieniono tryb pracy
+\item warunek końcowy: zmiana trybu pracy, wykrycie błędu lub wyłączenie oprogramowania
+\item funkcja przejścia $^cf_{sim,2}$:
+
+Zachowanie polega na wykonywaniu sterowania na podstawie danych o stanie robota otrzymywanych przez bufor komunikacyjny $^T_xc_{sim}$ wysyłanych przez rzeczywisty manipulator. W tym trybie pracy występuje komunikacja pomiędzy agentami, a wszystkie komendy ruchu są wysyłane do manipulatora poprzez bufor komunikacyjny $^T_yc_{sim}$. Symulacja staje się wtedy  wizualizacją ruchów prawdziwego robota.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.4\linewidth]{images/state_real.png}
+\caption{Funkcja przejścia $^cf_{sim,2}$ }
+\label{fig:state_real}
+\end{figure}
+
+\end{itemize}
+
+\newpage
+\paragraph{Zatrzymanie pracy ($^cB_{sim,3}$)}
+
+\begin{itemize}
+\item warunek początkowy: wykryto błąd lub wymuszono zatrzymanie pracy
+\item warunek końcowy: -
+\item funkcja przejścia $^cf_{sim,3}$:
+
+Zachowanie polega na bezpiecznym wyłączeniu funkcji podsystemu, zatrzymaniu manipulatora i przerwaniu z nim komunikacji oraz wyłączeniu symulacji i sterownika urządzenia.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.4\linewidth]{images/state_stop_sim.png}
+\caption{Funkcja przejścia $^cf_{sim,3}$ }
+\label{fig:state_stop_sim}
+\end{figure}
+
+\end{itemize}
+
 \subsubsection{Rzeczywisty receptor $R_{sim1}$}
+
+Rzeczywistym receptorem $R_{sim1}$ jest zadajnik w postaci myszy 3D. Służy do ręcznego sterowania ruchem robota. Wychylenia względem każdej z osi myszy odpowiadają zadawaniu niezerowych prędkości we współrzędnych związanych z narzędziem.
 
 \subsubsection{Wirtualny receptor $r_{sim1}$}
 
+Wirtualnym receptorem $r_{sim1}$ jest sterownik myszy 3D, dzięki któremu mechaniczne wychylenia gałki urządzenia są konwertowane na wartości liczbowe (od 0 do 1).
+
 \subsubsection{Rzeczywisty receptor $R_{sim2}$}
+
+Rzeczywistym receptorem $R_{sim2}$ jest klawiatura, która w stworzonym systemie służy jedynie do zmiany trybu sterownika z trybu symulacji do trybu pracy na rzeczywistym robocie oraz z działania we współrzędnych złączowych do współrzędnych narzędziowych.
 
 \subsubsection{Wirtualny receptor $r_{sim2}$}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\vspace*{1.5 cm}
-\section{Oprogramowanie kontrolera}
-\vspace{1.5 cm}
-%TODO
+Zadaniem wirtualnego receptora $r_{sim2}$ jest wykrywanie naciśnięcia zdefiniowanych przycisków klawiatury służących do zmiany trybu i przesyłaniu informacji do podsystemu sterowania w celu rozpoczęcia pracy w innym trybie.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \vspace*{1.5 cm}
-\section{Sterownik i symulacja}
+\section{Implementacja systemu}
+\vspace*{1.5 cm}
+
+Niniejszy rozdział przedstawia implementację systemu sterowania przedstawionego w rozdziale~4. Opisano w nim oparte na strukturze agentów $a_{robot}$ i $a_{sim}$ oprogramowanie odpowiednio kontrolera robota oraz sterownika ruchu i symulacji.
+
+\subsection{Oprogramowanie kontrolera}
+
+Implementacja oprogramowania mikrokontrolera STM32F407VET do sterowania robotem wykorzystuje system czasu rzeczywistego FreeRTOS oraz biblioteki STDPeriph opisane w rozdziale~3. Program napisany został w języku C++ i służy do komunikacji ze sterownikiem, kontrolowaniu ruchu napędów oraz monitorowaniu stanu manipulatora. Do stworzonych w ramach pracy komponentów zaliczają się:
+
+\begin{itemize}
+\item podsystem sterowania $c_{robot}$
+\item wirtualne efektory $e_{robot}$
+\end{itemize}
+
+\subsubsection{Wirtualne efektory $e_{robot1..6}$}
+
+Działanie efektorów polega na sterowaniu prędkością napędów na podstawie odczytów aktualnej prędkości z enkoderów oraz zadanej przez sterownik. W tym celu użyty został regulator typu PID. Ze względu na różnorodność napędów użytych w konstrukcji manipulatora występują różnice w sposobie ich sterowania. Silniki DC małej mocy (napędy 1, 3 i 4 stopnia swobody) sterowane są za pomocą jednego sygnału PWM i dwóch sygnałów decydujących o kierunku obrotu wału silnika. Silnik DC dużej mocy (napęd 2 stopnia swobody) jest sterowany za pomocą dwóch sygnałów PWM. Sterowanie serwami odpowiadającymi za 5 i 6 stopień swobody odbywa się poprzez wysyłanie i odbieranie komunikatów używając interfejs RS-485 zgodnie ze zdefiniowanym protokołem komunikacji Protocol 1.0 \cite{protocol}. Stąd napisano trzy oddzielne klasy odpowiadające za sterowanie danym rodzajem napędów:
+
+\begin{itemize}
+\item \textit{PWMMotor} - odpowiada za sterowanie silnikami DC małej mocy,
+\item \textit{HighPowerMotor} - odpowiada za sterowanie silnikami DC dużej mocy,
+\item \textit{ServoMotor} - odpowiada za sterowanie serwami Dynamixel RX-64.
+\end{itemize}
+
+Każda klasa dziedziczy po abstrakcyjnej klasie bazowej \textit{Motor}, która stanowi wspólny interfejs do inicjalizacji, odczytywania i zadawania prędkości każdemu rodzajowi napędów. 
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=1.0\linewidth]{images/motor_class.png}
+\caption{Diagram klas sterujących napędami}
+\label{fig:motor_class}
+\end{figure}
+
+\newpage
+Klasy \textit{PWMMotor} i \textit{HighPowerMotor} przechowują i wykorzystują dane o sterowaniu:
+
+\begin{itemize}
+\item zdefiniowane nastawy regulatora: \textit{K\_p}, \textit{K\_d}, \textit{K\_i},
+\item dane o napędzie: maksymalna prędkość (\textit{maxVel}) i przełożenie (\textit{ratio}),
+\item odczyty enkoderów w postaci struktury zdefiniowanej jako \textit{Encoder}:
+
+\begin{lstlisting}[language=C++,
+                   directivestyle={\color{black}}
+                   emph={int,char,double,float,unsigned},
+                   emphstyle={\color{blue}}
+                  ]
+typedef struct Encoder
+{
+	volatile uint32_t * currentCount; // aktualne wskazanie 
+	uint32_t previousCount; // poprzednie wskazanie
+	uint32_t range; // zakres licznika enkodera
+}Encoder;
+\end{lstlisting}
+
+\item stan regulatora: poprzednia wartość błędu (\textit{prevError}) i suma błędów sterowania (\textit{errorSum}).
+\end{itemize}
+
+Na podstawie tak zgromadzonych danych zadana wartość prędkości przeliczana jest na wartość wypełnienia PWM napędu stosując funkcję \textit{calcPWM()}, w której wykonywana jest regulacja PID według wzoru:
+
+\begin{equation} \label{eq:7}
+error = targetVelocity - currentVelocity
+\end{equation}
+
+
+\begin{equation} \label{eq:8}
+pwm += K\_p*error+K\_d*(error-prevError)
++K\_i*errorSum
+\end{equation}
+
+W przypadku serwa (klasa \textit{ServoMotor}) odczytywanie i zadawanie prędkości odbywa się poprzez wysyłanie odpowiednich komend i odbieranie wiadomości zwrotnych z serwa wykorzystując protokół komunikacji Protocol 1.0 \cite{protocol}. Regulacją prędkości zajmuje się oprogramowanie serwa dostarczone przez producenta. Stąd klasa \textit{ServoMotor} nie implementuje regulatora PID, a jedynie interfejs do komunikacji szeregowej. 
+
+Odbierane i wysyłane komendy mają postać ramek danych o ściśle zdefiniowanej strukturze:
+
+\begin{itemize}
+\item pierwsze dwa bajty ramki muszą mieć wartość szesnastkową $0xFF$,
+\item kolejny bajt informuje o ID (od 0 do 253, 254 to ID rozgłoszeniowe) serwa, do którego wysyłana jest komenda,
+\item po ID wysyłana jest długość ramki, czyli ilość przesyłanych w ramce bajtów (ilość parametrów + 2),
+\item następnie występuje bajt idefiniujący rodzaj instrukcji (tutaj używane instrukcje WRITE ($0x03$) i READ ($0x02$)),
+\item kolejne bajty to parametry instrukcji,
+\item ostatecznie wysyłany jest bajt sumy kontrolnej, której wzór przedstawia się następująco ($~$ to operacja negacji bitowej):
+
+\begin{equation} \label{eq:9}
+suma\_kontrolna = ~(ID + długość + parametr\_1 + ... + parametr\_N)
+\end{equation}
+
+\end{itemize}
+
+\begin{table}[htb!]
+\label{protocol}
+\begin{center}
+\caption{Ramka danych wysyłana do serwa Dynamixel \textit{(źródło: \cite{protocol})}}
+\begin{tabular}{ | c | c | c | c | c | c | c | c | c | }
+\hline
+ $0xFF$ & $0xFF$ & ID & Długość & Instrukcja & Parametr\_1 & ... & Parametr\_N & Suma kontrolna \\ 
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Po odebraniu przez serwo komendy odsyła ono ramkę powrotną, która różni się od wyżej wskazanej tylko tym, że bajt 4 wskazuje czy nie wystąpił żaden błąd zamiast długości:
+
+\begin{table}[htb!]
+\label{protocol}
+\begin{center}
+\caption{Ramka danych odsyłana od serwa Dynamixel \textit{(źródło: \cite{protocol})}}
+\begin{tabular}{ | c | c | c | c | c | c | c | c | c | }
+\hline
+ $0xFF$ & $0xFF$ & ID & Kod błędu & Instrukcja & Parametr\_1 & ... & Parametr\_N & Suma kontrolna \\ 
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Klasa ServoMotor do implementacji funkcji \textit{getVelocity()} i \textit{setVelocity()} wykorzystuje autorską bibliotekę \textbf{dxl\_rx64} napisaną w języku C, która stanowi wysokopoziomowy interfejs do wysyłania i odbioru ramek danych zdefiniowanych przez Protocol 1.0. Biblioteka wykorzystuje bufor cykliczny do odbierania bajtów i akumulowania ich do ramki danych.
+
+\subsubsection{Podsystem sterowania $c_{robot}$}
+
+Realizacja podsystemu sterowania $c_{robot}$ wykorzystuje udogodnienia systemu czasu rzeczywistego FreeRTOS takie jak zadania (ang. tasks) i kolejki (ang. queues). Komunikacja ze sterownikiem ruchu (agentem $a_{sim}$) odbywa się poprzez interfejs UART. Działanie podzielono na 4 zadania:
+
+\begin{itemize}
+\item sterowanie napędami na podstawie odbieranych z bufora komunikacyjnego komend ruchu oraz odczytanych z napędów prędkości ( zadanie \textit{StateMachineTask}),
+\item wysyłanie ramek danych z prędkościami poszczególnych członów i aktualnym stanem poprzez bufor komunikacyjny ( zadanie \textit{VelocitySendTask}),
+\item odbieranie komend ruchu z bufora komunikacyjnego (zadanie to wykonywane jest w przerwaniu od interfejsu komunikacyjnego UART),
+\item zadanie bezczynności uruchamiane w momencie uśpienia zadania sterowania w przypadku wykrycia niepoprawnego działania i zatrzymania napędów (zadanie \textit{IdleTask}).
+\end{itemize} 
+
+Priorytety poszczególnych zadań zostały ustalone, aby sterowanie napędami zawsze wykonywane było na czas (zakładane maksymalne opóźnienie pomiędzy dwoma komendami ruchu wynosi 20 ms). Najniższy możliwy priorytet ma zadanie \textit{IdleTask}, które służy głównie oszczędzaniu energii. Priorytety wyższe posiadają zadania sterowania napędami (\textit{StateMachineTask}) oraz wysyłania danych o prędkościach (\textit{VelocitySendTask}). Najwyższy priorytet ma przerwanie odbioru danych z interfejsu UART.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.8\linewidth]{images/task_priority.png}
+\caption{Priorytet wykonywania zadań podsystemu}
+\label{fig:task_priority}
+\end{figure}
+
+\paragraph{Zadanie \textit{StateMachineTask}} oparte jest na automacie skończonym przedstawionym w rozdziale 4. Implementacją podsystemu jest klasa \textit{ManipulatorStateMachine} napisana wykorzystując wzorzec projektowy maszyny stanu (ang. state machine). 
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=1.0\linewidth]{images/statemachine_class.png}
+\caption{Diagram klasy implementującej automat skończony podsystemu sterowania $c_{robot}$}
+\label{fig:statemachine_class}
+\end{figure}
+
+Klasa \textit{ManipulatorStateMachine} przechowuje tablicę wskaźników do obiektów typu \textit{Motor} służących sterowaniu prędkością silników manipulatora oraz interfejs do zadawania prędkości każdemu z napędów (w postaci funkcji \textit{setJointsVel()}), a także zatrzymywaniu ich w nieoczekiwanych sytuacjach (funkcja \textit{emergencyStop()}). 
+
+Jak już wspomniano klasa realizuje automat skończony podsystemu sterowania poprzez przechowywanie i wykorzystywanie funkcji \textit{handler\_t}. Typ ten jest zdefiniowany jako:
+
+\begin{lstlisting}[language=C++,
+                   directivestyle={\color{black}}
+                   emph={int,char,double,float,unsigned},
+                   emphstyle={\color{blue}}
+                  ]
+typedef State (*handler_t)(void*);
+\end{lstlisting}
+
+, natomiast typ \textit{State} jako:
+
+\begin{lstlisting}[language=C++,
+                   directivestyle={\color{black}}
+                   emph={int,char,double,float,unsigned},
+                   emphstyle={\color{blue}}
+                  ]
+enum State
+{
+	JOINT_STATE = 0,
+	TOOL_STATE,
+	IDLE_STATE,
+	INIT_STATE,
+	RESET_STATE,
+};
+\end{lstlisting}
+
+Typ \textit{handler\_t} definiuje więc wskaźnik na funkcję przyjmującą wskaźnik na adres pamięci obiektu \textit{ManipulatorStateMachine}, a zwraca jeden ze stanów \textit{State}, do którego ma nastąpić przejście. Każdemu ze stanów przypisana jest jedna z procedur obsługi (\textit{handler\_t}) definiująca zachowanie w aktualnym stanie. Poniżej pokazano listę stanów, przypisane do nich procedury obsługi oraz opis ich działania (tablica 10).
+
+\begin{table}[htb!]
+\label{handlers}
+\begin{center}
+\caption{Procedury obsługi stanów automatu skończonego manipulatora}
+\begin{tabular}{ | c | c | p{9.5cm} |}
+\hline
+ Stan & Procedura obsługi & Opis działania \\ 
+\hline
+ INIT\_STATE & \textit{runInit()} & Jest to stan początkowy, w którym inicjalizowane są wszystkie napędy oraz regulatory. Po udanej konfiguracji następuje przejście do stanu IDLE\_STATE.\\
+\hline
+ IDLE\_STATE & \textit{runIdle()} & Obsługa stanu polega na próbie odbioru danych z bufora komunikacyjnego odbierającego komendy ruchu z interfejsu UART. Bufor odbiorczy stanowi kolejka systemu FreeRTOS. Jeżeli odebrana komenda odpowiada za wykonywanie w jednym z trybów: złączowym (JOINT\_STATE) lub narzędziowym (TOOL\_STATE), to następuje przejście do odpowiadających im stanów. W przeciwnym wypadku oczekiwanie na komendę w stanie IDLE\_STATE trwa. \\
+\hline
+ RESET\_STATE & \textit{runReset()} & Przejście do tego stanu odbywa się w momencie gdy nie powiedzie się inicjalizacja w stanie INIT\_STATE lub wystąpi problem z komunikacją (komendy nie będą przychodzić przez długi czas). W tym stanie następuje bezwzględne zatrzymanie napędów i zatrzymanie zadania systemu związanego z obsługą stanów na rzecz uśpienia mikrokontrolera. W momencie gdy mikrokontroler zostanie wybudzony (przy odebraniu jakiejkolwiek komendy) następuje ponowienie inicjalizacji napędów i regulatorów. W przypadku niepowodzenia następuje zakończenie zadania obsługującego poszczególne stany i reset mikrokontrolera. Jeżeli reinicjalizacja się uda następuje przejście do stanu otrzymanego w odebranej komendzie.\\
+\hline
+ JOINT\_STATE & \textit{runJoint()} & W przypadku odebrania w stanie IDLE\_STATE lub RESET\_STATE komendy ruchu w trybie narzędziowym, wykonywana jest procedura obsługi stanu TOOL\_STATE. Polega ona na cyklicznym odbieraniu oczekującym (z czasem oczekiwania 20 ms) komend ruchu w tym trybie i nadawaniu zadanej prędkości napędów z zastrzeżeniem, że prędkość niezerową może mieć w tym stanie tylko jeden człon (napęd). Jeżeli żaden komunikat nie dojdzie w okresie oczekiwania następuje przejście do stanu IDLE\_STATE po uwczesnym zatrzymaniu napędów. W przypadku wystąpienia problemów w komunikacji z serwami Dynamixel następuje przejście do stanu RESET\_STATE (czas oczekiwania także 20 ms). \\
+\hline
+ TOOL\_STATE & \textit{runTool()} & Ten stan obsługiwany jest tak samo jak JOINT\_STATE z tym wyjątkiem, że dozwala na sterowanie kilkoma napędami naraz. \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Działanie klasy \textit{ManipulatorStateMachine} obsługiwane jest na podstawie wiedzy o stanie aktualnym (\textit{currentState}), stanie końcowym (\textit{endState}) i przejściach pomiędzy stanami. Na początku następuje inicjalizacja klasy poprzez wypełnienie tablicy procedur (\textit{stateHandlers[]}) oraz ustawienie stanu początkowego jako aktualnego i wybranie stanu końcowego. Następnie wywoływana jest funkcja \textit{run()}, która uruchamia pierwszą i kolejne procedury obsługi działając w pętli. Następny stan wybierany jest na podstawie wartości zwracanej przez procedurę aktualnego. Wykonywane przez klasę zadanie zostaje zatrzymane w momencie wykonania stanu oznaczonego jako końcowy.
+
+\paragraph{Zadanie \textit{VelocitySendTask}} polega na wysyłaniu poprzez bufor komunikacyjny (interfejs UART) ramek danych zawierających dane o pracy manipulatora. Wykorzystując interfejs klasy \textit{ManipulatorStateMachine} odczytywane są prędkości wszystkich członów oraz aktualny stan. Komunikacja ze sterownikiem jest wzorowana na protokole serw Dynamixel. Ramka składa się z dwóch pól nagłówka (o wartości $0xFF$), bajtu definiującego stan pracy, pola długości nagłówka. Po nich następuje następuje wysyłanie bajtów danych (wartości prędkości) i sumy kontrolnej obliczanej zgodnie ze wzorem \ref{eq:9}. 
+
+\begin{table}[htb!]
+\label{comm}
+\begin{center}
+\caption{Ramka danych komunikacji manipulator- sterownik }
+\begin{tabular}{ | c | c | c | c | c | c | c | c | c | c | }
+\hline
+ $0xFF$ & $0xFF$ & Stan & Długość & Pr\_1 LSB & Pr\_1 MSB & ... & Pr\_N LSB & Pr\_N MSB & Suma kontrolna \\ 
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Wartości prędkości są dzielone na 2 bajty i wysyłane w kolejności młodszy bajt (LSB), starszy bajt (MSB).
+
+\paragraph{Zadanie odbierania komend ruchu} odbywa się w przerwaniu, które występuje w momencie odebrania bajtu danych poprzez interfejs komunikacyjny UART. Bajty zapisywane są w buforze cyklicznym i w momencie otrzymania całej ramki danych (przedstawionej wyżej) sprawdzana jest jej poprawność (suma kontrolna). Jeżeli ramka jest poprawna, wybierane są z niej dane w postaci trybu pracy, ilości przesyłanych bajtów danych (długości) i wszystkich zadanych prędkości poszczególnych napędów. Następnie dane te są zapisywane w postaci struktury \textit{ManipulatorMsg}:
+
+\begin{lstlisting}[language=C++,
+                   directivestyle={\color{black}}
+                   emph={int,char,double,float,unsigned},
+                   emphstyle={\color{blue}}
+                  ]
+typedef struct ManipulatorMsg
+{
+	State type;
+    uint8_t length;
+    uint8_t params[MANIPULATOR_MAX_PARAMS];
+    uint8_t checksum;
+} ManipulatorMsg;
+\end{lstlisting}
+
+W momencie uzyskania komendy w postaci powyższej struktury należy ją przesłać do zadania \textit{StateMachineTask}. Komunikacja pomiędzy zadaniami odbywa się poprzez kolejki systemu FreeRTOS. W trakcie działania zadanie \textit{StateMachineTask} odpytuje kolejke o nową komendę typu \textit{ManipulatorMsg}. Oczekiwanie na nią trwa 20 ms i jeżeli w tym czasie nie przyszła nowa komenda oznacza to, że komunikacja została przerwana. 
+
+\paragraph{Zadanie \textit{IdleTask}} posiada najniższy priorytet i wykonywane jest tylko jeżeli pozostałe zadania zostaną przerwane. Jedynym celem zadania jest wprowadzenie mikrokontrolera w stan niższego poboru mocy (uśpienie). W tym celu wykorzystywane jest zdefiniowane w systemie FreeRTOS zadanie \textit{vApplicationIdleTask()}, które wywołuje instrukcje \textit{\_\_WFI()}. Wybudzenie mikrokontrolera w tym stanie może nastąpić za pomocą przerwania (powrót do działania następuje w przypadku wystąpienia komunikacji poprzez interfejs UART).
+
+\subsection{Sterownik i symulacja}
 \vspace{1.5 cm}
 %TODO
 
@@ -850,13 +1258,6 @@ Poniżej przedstawiono opis zachowań podsystemu sterowania $c_{robot}$:
 \vspace*{1.5 cm}
 \section{Weryfikacja}
 \vspace{1.5 cm}
-%TODO
-\subsection{Metody generowania trajektorii}
-
-Oprogramowanie sterujące robotem powinno pozwalać na zaprogramowanie go, aby mógł podążać wyznaczoną ścieżką. Użytkownik zadaje 
-\subsubsection{Interpolacja liniowa}
-%TODO
-\subsubsection{Interpolacja wielomianami sklejanymi}
 %TODO
 
 
@@ -903,6 +1304,8 @@ Oprogramowanie sterujące robotem powinno pozwalać na zaprogramowanie go, aby m
 \addacronym{URC}{University Rover Challenge}
 \addacronym{UML}{Unified Modelling Language}
 \addacronym{API}{Application Programming Interface}
+\addacronym{PWM}{Pulse Width Modulation}
+\addacronym{PID}{proportional–integral–derivative}
 % Sort the database
 \DTLsort*{Acronym}{acronyms}
 
