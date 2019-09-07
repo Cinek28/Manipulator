@@ -174,9 +174,8 @@ Dokument ten stanowi raport z przeprowadzonej pracy magisterskiej. Składa się 
 \item rozdział 3 opisuje konstrukcje i technologie użyte w projekcie autorskiego manipulatora szeregowego,
 \item rozdział 4 przedstawia architekturę oprogramowania wykorzystując koncepcję agenta upostaciowionego i język opisu sprzętowego SysML,
 \item rozdział 5 przedstawia implementację systemu: działanie oprogramowania kontrolera robota opartego na systemie czasu rzeczywistego FreeRTOS oraz sterownika i oprogramowania symulacyjnego stworzonego z pomocą pakietu ROS oraz środowiska Gazebo,
-\item rozdział 6 stanowi szczegółowy opis przeprowadzonych testów ruchu manipulatora w środowisku symulacyjnym Gazebo,
-\item rozdział 7 opisuje wyniki zebrane podczas testów oraz analizę dokładności wykonywania zadanego sterowania,
-\item rozdział 8 poświęcony jest podsumowaniu pracy.  
+\item rozdział 6 stanowi szczegółowy opis przeprowadzonych testów ruchu manipulatora w środowisku symulacyjnym Gazebo oraz uzyskane wyniki,
+\item rozdział 7 poświęcony jest podsumowaniu pracy.  
 \end{itemize} 
 
 \subsection{Analiza trendów}
@@ -1212,7 +1211,8 @@ Typ \textit{handler\_t} definiuje więc wskaźnik na funkcję przyjmującą wska
 
 Działanie klasy \textit{ManipulatorStateMachine} obsługiwane jest na podstawie wiedzy o stanie aktualnym (\textit{currentState}), stanie końcowym (\textit{endState}) i przejściach pomiędzy stanami. Na początku następuje inicjalizacja klasy poprzez wypełnienie tablicy procedur (\textit{stateHandlers[]}) oraz ustawienie stanu początkowego jako aktualnego i wybranie stanu końcowego. Następnie wywoływana jest funkcja \textit{run()}, która uruchamia pierwszą i kolejne procedury obsługi działając w pętli. Następny stan wybierany jest na podstawie wartości zwracanej przez procedurę aktualnego. Wykonywane przez klasę zadanie zostaje zatrzymane w momencie wykonania stanu oznaczonego jako końcowy.
 
-\paragraph{Zadanie \textit{VelocitySendTask}} polega na wysyłaniu poprzez bufor komunikacyjny (interfejs UART) ramek danych zawierających dane o pracy manipulatora. Wykorzystując interfejs klasy \textit{ManipulatorStateMachine} odczytywane są prędkości wszystkich członów oraz aktualny stan. Komunikacja ze sterownikiem jest wzorowana na protokole serw Dynamixel. Ramka składa się z dwóch pól nagłówka (o wartości $0xFF$), bajtu definiującego stan pracy, pola długości nagłówka. Po nich następuje następuje wysyłanie bajtów danych (wartości prędkości) i sumy kontrolnej obliczanej zgodnie ze wzorem \ref{eq:9}. 
+\newpage
+\paragraph{Zadanie \textit{VelocitySendTask}} polega na wysyłaniu poprzez bufor komunikacyjny (interfejs UART) ramek danych zawierających dane o pracy manipulatora. Wykorzystując interfejs klasy \textit{ManipulatorStateMachine} odczytywane są prędkości wszystkich członów oraz aktualny stan. Komunikacja ze sterownikiem jest wzorowana na protokole serw Dynamixel. Ramka składa się z dwóch pól nagłówka (o wartości $0xFF$), bajtu definiującego stan pracy, pola długości nagłówka. Po nich następuje następuje wysyłanie bajtów danych (wartości prędkości) i sumy kontrolnej (SK) obliczanej zgodnie ze wzorem \ref{eq:9}. 
 
 \begin{table}[htb!]
 \label{comm}
@@ -1220,7 +1220,7 @@ Działanie klasy \textit{ManipulatorStateMachine} obsługiwane jest na podstawie
 \caption{Ramka danych komunikacji manipulator- sterownik }
 \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c | }
 \hline
- $0xFF$ & $0xFF$ & Stan & Długość & Pr\_1 LSB & Pr\_1 MSB & ... & Pr\_N LSB & Pr\_N MSB & Suma kontrolna \\ 
+ $0xFF$ & $0xFF$ & Stan & Dł. & Pr\_1 LSB & Pr\_1 MSB & ... & Pr\_N LSB & Pr\_N MSB & SK \\ 
 \hline
 \end{tabular}
 \end{center}
@@ -1236,8 +1236,8 @@ Wartości prędkości są dzielone na 2 bajty i wysyłane w kolejności młodszy
                    emphstyle={\color{blue}}
                   ]
 typedef struct ManipulatorMsg
-{
-	State type;
+{   
+    State type;
     uint8_t length;
     uint8_t params[MANIPULATOR_MAX_PARAMS];
     uint8_t checksum;
@@ -1250,7 +1250,79 @@ W momencie uzyskania komendy w postaci powyższej struktury należy ją przesła
 
 \subsection{Sterownik i symulacja}
 \vspace{1.5 cm}
-%TODO
+Implementacja oprogramowania sterownika ruchem i symulacji wykorzystuje pakiet ROS, biblioteki dodatkowe ros\_control i spacenav oraz symulator Gazebo. Do stworzonych w ramach pracy komponentów zaliczają się:
+
+\begin{itemize}
+\item podsystem sterowania $c_{sim}$
+\item wirtualny receptor $r_{sim1}$
+\item wirtualny receptor $r_{sim2}$
+\end{itemize}
+
+Implementacja agenta $a_{sim}$ wykorzystuje węzły ROS do komunikacji międzyprocesowej. Głównymi węzłami są:
+
+\begin{itemize}
+\item /gazebo - węzeł odpowiedzialny za proces symulacji,
+\item /RobotHWInterfaceNode - węzeł odpowiedzialny za sterowanie ruchem manipulatora,
+\item /spacenav\_node - sterownik myszy 3D wysyłający dane o wychyleniu gałki myszy.
+\end{itemize}
+
+Poniższy diagram przedstawia jak przebiega komunikacja pomiędzy węzłami, na którym węzły oznaczone są jako elipsy, a tematy jako prostokąty:
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=1.0\linewidth]{images/node_graph.png}
+\caption{Diagram komunikacji pomiędzy węzłami sterownika manipulatora}
+\label{fig:node_graph}
+\end{figure}
+
+Węzeł sterujący publikuje komendy ruchu w tematach typu \textit{/command} dla każdego z 6 członów manipulatora. Dane te odczytywane są przez symulator i na podstawie modelu fizycznego wizualizowane w symulacji. Każdy z przegubów ma przypisany do siebie sterownik ruchu. W trybie ręcznym komendy ruchu w postaci prędkości narzędzia lub każdego z przegubów z osobna (w zależności od konfiguracji ruchu) są przekazywane do węzła sterującego za pomocą myszy 3D. Dane wysyłane są poprzez temat \textit{/spacenav/twist}, który zawiera aktualne wychylenia/skręcenia gałki urządzenia w 6 osiach. W przypadku sterowania w trybie automatycznym możliwe jest zadawanie prędkości lub pozycji i orientacji końcówki robota w przestrzeni poprzez publikowanie wiadomości na odpowiednie tematy węzła \textit{/RobotHWInterfaceNode}. Ponadto w przypadku podłączenia interfejsu komunikacyjnego robota możliwe jest bezpośrednie sterowanie ruchem rzeczywistego manipulatora. W momencie gdy możliwa jest komunikacja sterownik- robot sterowanie ruchem odbywa się na podstawie danych przesyłanych z robota, a nie z symulacji. W ten sposób możliwe jest testowanie ruchu przed wykonywaniem go w rzeczywistości. 
+
+\paragraph{Sterownik robota} (węzeł \textit{RobotHWInterfaceNode}) zaimplementowano wykorzystując narzędzia dostarczone przez bibliotekę ros\_control opisaną w rozdziale 3. Architektura rozwiązania bazuje na diagramie \ref{fig:ros_control}. Przy starcie programu uruchamiany jest \textit{Controller Manager}, który odpowiada za załadowanie i przypisanie każdemu z przegubów sterownika ruchu (oznaczony na diagramie jako \textit{Controller}). Rodzaje i parametry (np. nastawy PID) sterowników są definiowane w pliku typu \textit{yaml} i ładowane przy starcie. Wtedy za pomocą węzła typu \textit{spawner} (na diagramie \ref{fig:node_graph} oznaczony jako \textit{/manipulator/controller\_spawner}) następuje ich uruchomienie. Węzeł \textit{RobotHWInterfaceNode} implementuje warstwy oprogramowania oznaczone na rysunku \ref{fig:ros_control} jako \textit{Hardware Resource Interface Layer}, a także \textit{hardware\_interface::RobotHW}. Pierwsza z nich stanowi interfejs do pobierania danych z kontrolerów o zadanych komendach ruchu (interfejs typu \textit{command}), a także o stanie (prędkościach, pozycjach) poszczególnych przegubów (interfejs typu \textit{state}). Druga jest pośredniczącym interfejsem sprzętowym. Klasa \textit{hardware\_interface::RobotHW} jest  abstrakcyjna i stanowi szablon komunikacji pomiędzy sterownikiem, a robotem. W celu zaimplementowania interfejsu sprzętowego należy zdefiniować zadeklarowane funkcje \textit{write()}, \textit{read()} i \textit{update()}, które zajmują się odpowiednio: wysyłaniem zadanego sterowania do robota, odczytywaniem danych z napędów (np. prędkości) oraz aktualizowaniem stanu sterowników.
+
+Poniżej przedstawiono jak został zrealizowany węzeł \textit{RobotHWInterfaceNode} wykorzystując bibliotekę \textit{ros\_control}:
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=1.0\linewidth]{images/class_sim.png}
+\caption{Diagram klas służących implementacji węzła sterującego ruchem manipulatora}
+\label{fig:class_sim}
+\end{figure}
+
+Klasa \textit{RobotHWInterfaceBase} dziedziczy po interfejsie \textit{RobotHW} oraz zawiera interfejsy stanów:
+\begin{itemize}
+\item \textit{jointStateInt},
+\item \textit{velocityJointInt},
+\item \textit{positionJointInt},
+\item \textit{effortJointInt}.
+\end{itemize} 
+Pozwalają one na odczytywanie aktualnych prędkości, pozycji, mocy z każdego sterownika w przypadku pracy w symulacji lub prędkości w przypadku pracy z rzeczywistym robotem. Ponadto klasa posiada interfejsy umożliwiające zadawaniu określonego sterowania względem prędkości, pozycji lub mocy:
+
+\begin{itemize}
+\item \textit{jointVelocityCommands},
+\item \textit{jointPositionCommands},
+\item \textit{jointEffortCommands}.
+\end{itemize}
+
+Klasa ta stanowi bazę dla docelowego interfejsu sprzętowego \textit{RobotHWInterface}, który implementuje 3 wymagane funkcje:
+
+\begin{itemize}
+\item \textit{write()} - funkcja przesyła zadane prędkości do manipulatora w przypadku możliwości komunikacji z urządzeniem, w przeciwnym wypadku komendy ruchu wysyłane są do symulacji,
+\item \textit{read()} - funkcja odczytuje prędkości i stan manipulatora w przypadku możliwości komunikacji z urządzeniem, w przeciwnym wypadku dane te odczytywane są z symulacji,
+\item \textit{update()} - działanie funkcji polega na odczytaniu aktualnych prędkości (\textit{read()}), aktualizacji stanu sterowników wykorzystując interfejs \textit{controllerManager}, a na koniec przesłanie danych o sterowaniu (\textit{write()}).
+\end{itemize}
+
+Interfejs sprzętowy wykorzystuje klasę \textit{RobotSerialComm}, która pozwala na wysyłanie i odbieranie danych wykorzystując port szeregowy komputera. Jest ona wykorzystywana do ustawiania parametrów i komunikacji po interfejsie UART z manipulatorem. Przesyłane komunikaty mają taką samą postać jak przedstawiona w opisie komunikacji agenta $a_{robot}$ (\textit{ManipulatorMsg}). Do odbioru danych wykorzystywany jest także bufor cykliczny. W przypadku wystąpienia problemów (odczytanie danych nie powiodło się przez 20 ms) następuje przerwanie komunikacji.
+
+\paragraph{Wirtualny receptor $r_{sim1}$} wykorzystuje węzeł \textit{/spacenav} do konwertowania wartości wychyleń myszy 3D i wysyłania ich w temacie \textit{/spacenav/twist}. Do tego tematu zostaje podpięty subskrybent \textit{twistSub}, który wywołuje funkcję \textit{newVelCallback()} ilekroć na temacie spacenav zostaje opublikowana nowa wiadomość. W zależności od trybu pracy dane pozyskane z tematu dotyczą zadania prędkości końcówki (narzędziu) lub pojedynczych przegubów. Jeżeli sterownik pracuje w trybie złączowym, wartość wychylenia przeliczane są do prędkości względem ich maksymalnych wartości. W innym przypadku dodatkowo wykorzystywana biblioteka \textit{kdl}, która posiada solvery prostej i odwrotnej kinematyki. Zadana prędkość narzędzia przeliczana jest do wymaganych do jej uzyskania prędkości poszczególnych członów poprzez rozwiązania zadania odwrotnego kinematyki dla prędkości. Aby było to możliwe w trakcie inicjalizacji interfejsu definiowany jest łańcuch kinematyczny \textit{kinematicChain} manipulatora, który jednoznacznie opisuje położenie członów względem siebie. Opis łańcucha kinematycznego wykonano na podstawie parametrów Denavita-Hartenberga manipulatora przedstawionych w rozdziale 3.
+
+\paragraph{Symulacja} została przygotowana wykorzystując program Gazebo. W celu zdefiniowania modelu fizycznego i wizualnego robota wykorzystano format URDF. Każdy z członów oprócz standardowych parametrów takich jak masa, punkt początkowy, materiał, geometria i rodzaj i ograniczenia przegubów ma zdefiniowany ponadto dodatkowy element \textit{transmission}, który służy do połączenia sterowników biblioteki \textit{ros\_control} z symulatorem. Na podstawie pliku URDF tworzony jest model manipulatora pokazany poniżej:
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.6\linewidth]{images/simulation.png}
+\caption{Model manipulatora w środowisku symulacyjnym Gazebo}
+\label{fig:simulation}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1259,15 +1331,6 @@ W momencie uzyskania komendy w postaci powyższej struktury należy ją przesła
 \section{Weryfikacja}
 \vspace{1.5 cm}
 %TODO
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\vspace*{1.5 cm}
-\section{Opracowanie wyników}  \label{wyniki}
-\vspace{3.0 cm}
-%TODO
-\vspace{1.0 cm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
