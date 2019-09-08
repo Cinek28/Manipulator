@@ -11,7 +11,7 @@ RobotSerialComm::RobotSerialComm()
 
 RobotSerialComm::~RobotSerialComm()
 {
-	close();
+	closePort();
 }
 
 bool RobotSerialComm::openPort( int port, int baudrate )
@@ -87,7 +87,7 @@ bool RobotSerialComm::readByte(unsigned char* byte)
 
 bool RobotSerialComm::readData( ManipulatorMsg *msg)
 {
-	if(!isOpened)
+	if(!isOpened())
 		return false;
 	unsigned char byte = 0;
 	if(!readByte(&byte))
@@ -109,7 +109,7 @@ bool RobotSerialComm::readData( ManipulatorMsg *msg)
 	}
 	else if(size == 3)
 	{
-	    msg->type = *(buffer.end-1);
+	    msg->type = (ManipulatorCmd)(*(buffer.end-1));
 	}
 	else if(size == 4)
 	{
