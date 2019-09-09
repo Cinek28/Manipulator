@@ -40,6 +40,10 @@
 \usepackage{float}
 \captionsetup[table]{justification=centering,singlelinecheck=off}
 \captionsetup[figure]{justification=centering,singlelinecheck=off}
+\usepackage{chngcntr}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\counterwithin{equation}{section}
 
 \fancyhf{} % clear all header and footers
 \renewcommand{\headrulewidth}{0pt} % remove the header rule
@@ -48,8 +52,9 @@
 
 %bibliografia
 \usepackage{csquotes}
-\usepackage[backend=biber, style=numeric]{biblatex}
+\usepackage[backend=biber, style=numeric, sorting=nty]{biblatex}
 \addbibresource{master.bib}
+
 
 
 %Abbrevations
@@ -118,9 +123,7 @@
 Celem pracy było opracowanie, implementacja i weryfikacja działania systemu sterującego manipulatorem antropomorficznym. Opisane zostały istniejące rozwiązania oraz narzędzia wykorzystane podczas tworzenia projektu. Sterownik robota został wykonany wykorzystując koncepcję agenta upostaciowionego. System składa się z dwóch części. Pierwszą z nich jest oprogramowanie kontrolujące wszystkie peryferia robota i jest oparte na systemie czasu rzeczywistego. Komendy sterujące ruchem manipulatora przekazywane są ze sterownika monitorującego jego stan za pomocą warstwy pośredniczącej (interfejsu sprzętowego). Dodatkowo sterownik połączony został z oprogramowaniem symulacyjnym, co pozwala na sprawdzenie jego działania w wirtualnym środowisku, bez uruchamiania rzeczywistego manipulatora. Główny kontroler robota został oparty o mikrokontroler STM32F407-VET, a program sterujący został napisany wykorzystując biblioteki Standard Peripheral Libraries (STDPeriph) oraz system czasu rzeczywistego FreeRTOS. Sterownik został przygotowany z zastosowaniem pakietu Robot Operating System (ROS) oraz środowiska symulacji Gazebo. Weryfikację systemu wykonano poprzez analizę testów ruchu robota po zadanej trajektorii do określonej pozycji.
 \vspace{0.5 cm}
 \\
-\textit{Słowa kluczowe:}
-\\
-\textit{Manipulator, System Czasu Rzeczywistego, ROS, FreeRTOS, Symulacja}
+\textit{\textbf{Słowa kluczowe:}}\textit{manipulator, system czasu rzeczywistego, ROS, FreeRTOS, symulacja}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,9 +138,8 @@ Celem pracy było opracowanie, implementacja i weryfikacja działania systemu st
 The aim of this thesis was to invent, implement and verify the operation of antropomorphic manipulator's control system. State of the art and technologies used in system development were discussed. The control driver was designed using an embodied agent theory. The system consists of two parts. First of them is a software managing all robot's peripherals and it is based on a real time operating system (RTOS). The manipulator's movement control commands are transfered from the driver which is monitoring the manipulator's state using hardware interface. Additionally the driver was created along with simulation software. That makes it possible to check it's performance in virtual environment, with no necessity to use actual robot. The main manipulator's controller is STM32F407-VET microchip and it's program was written using Standard Peripheral Libraries (STDPeriph) and FreeRTOS real time operating system. The control driver was prepared based on Robot Operating System (ROS) software and Gazebo simulation environment. The system's verification was done by analysing robot's tests of movement along specified trajectory to given position.
 \vspace{0.5 cm}
 \\
-\textit{Keywords:}
-\\
-\textit{Manipulator, Real Time Operating System, ROS, FreeRTOS, Simulation}
+\textit{\textbf{Keywords:}}
+\textit{manipulator, real time operating system, ROS, FreeRTOS, simulation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -266,6 +268,7 @@ Oprócz tego zauważone zostają wady takie jak istnienie pojedynczego punktu aw
 Szeroka gama gotowych modułów dodatkowych (takich jak symulator Gazebo), możliwość łatwego rozszerzania funkcjonalności systemu sterowania opartego o ROS oraz łatwość w dostosowaniu gotowych bibliotek do współpracy z pakietem zdecydowały o użyciu tego pakietu w niniejszej pracy. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoublepage
 \newpage
 \vspace*{1.5 cm}
 \section{Kinematyka mechanizmów wieloczłonowych}
@@ -287,7 +290,7 @@ często równa jest liczbie przegubów. Aby koncówka manipulatora (efektor) mog
 \label{fig:manipulator_scheme}
 \end{figure}
 
-Do poprawnego sterowania manipulatorem robotycznym potrzebna jest znajomość połozenia i prędkości poszczególnych jego członów względem bazowego, nieruchomego układu współrzędnych, który nazywany jest układem globalnym. W tym celu dla każdego członu sztywnego definiuje sie związany z nim lokalny układ współrzędnych. Wtedy położenie kazdego członu można określić jako połozenie układu lokalnego wzgledem globalnego. Podstawowymi operacjami stosowanymi przy opisie kinematyki mechanizmów wieloczłonowych są rotacja i translacja o wektor. Pozwalają one na zdefiniowanie wektora przesunięcia oraz macierzy rotacji układu lokalnego
+Do poprawnego sterowania manipulatorem robotycznym potrzebna jest znajomość położenia i prędkości poszczególnych jego członów względem bazowego, nieruchomego układu współrzędnych, który nazywany jest układem globalnym. W tym celu dla każdego członu sztywnego definiuje sie związany z nim lokalny układ współrzędnych. Wtedy położenie kazdego członu można określić jako połozenie układu lokalnego wzgledem globalnego. Podstawowymi operacjami stosowanymi przy opisie kinematyki mechanizmów wieloczłonowych są rotacja i translacja o wektor. Pozwalają one na zdefiniowanie wektora przesunięcia oraz macierzy rotacji układu lokalnego
 względem układu globalnego (rysunek \ref{fig:kinematic_scheme}).
 
 \begin{figure}[hbt!]
@@ -303,7 +306,7 @@ Znając macierz rotacji $\bm{R}$, wektor translacji $\bm{r_0}$ układu lokalnego
 \bm{r} = \bm{r_0} + \bm{R} \bm{r_1}
 \end{equation}
 
-Dodatkowo dla ułatwienia zapisu równań \ref{eq:1} wprowadzono pojęcie macierzy transformacji \cite{systemkozlowski} pomiędzy układem $i-1$, a układem $i$. Jest to macierz 4x4, która tworzona jest na podstawie macierzy rotacji (3x3) oraz wektora translacji (3x1) i przedstawia się następująco:
+Dodatkowo dla ułatwienia zapisu równań \eqref{eq:1} wprowadzono pojęcie macierzy transformacji \cite{systemkozlowski} pomiędzy układem $i-1$, a układem $i$. Jest to macierz 4x4, która tworzona jest na podstawie macierzy rotacji (3x3) oraz wektora translacji (3x1) i przedstawia się następująco:
 
 \begin{equation} \label{eq:2}
 \bm{^{i-1}_{i}T} = \begin{bmatrix} 
@@ -1193,7 +1196,7 @@ Typ \textit{handler\_t} definiuje więc wskaźnik na funkcję przyjmującą wska
 \caption{Procedury obsługi stanów automatu skończonego manipulatora}
 \begin{tabular}{ | c | c | p{9.5cm} |}
 \hline
- Stan & Procedura obsługi & Opis działania \\ 
+ \textbf{Stan} & \textbf{Procedura obsługi} & \textbf{Opis działania} \\ 
 \hline
  INIT\_STATE & \textit{runInit()} & Jest to stan początkowy, w którym inicjalizowane są wszystkie napędy oraz regulatory. Po udanej konfiguracji następuje przejście do stanu IDLE\_STATE.\\
 \hline
@@ -1212,7 +1215,7 @@ Typ \textit{handler\_t} definiuje więc wskaźnik na funkcję przyjmującą wska
 Działanie klasy \textit{ManipulatorStateMachine} obsługiwane jest na podstawie wiedzy o stanie aktualnym (\textit{currentState}), stanie końcowym (\textit{endState}) i przejściach pomiędzy stanami. Na początku następuje inicjalizacja klasy poprzez wypełnienie tablicy procedur (\textit{stateHandlers[]}) oraz ustawienie stanu początkowego jako aktualnego i wybranie stanu końcowego. Następnie wywoływana jest funkcja \textit{run()}, która uruchamia pierwszą i kolejne procedury obsługi działając w pętli. Następny stan wybierany jest na podstawie wartości zwracanej przez procedurę aktualnego. Wykonywane przez klasę zadanie zostaje zatrzymane w momencie wykonania stanu oznaczonego jako końcowy.
 
 \newpage
-\paragraph{Zadanie \textit{VelocitySendTask}} polega na wysyłaniu poprzez bufor komunikacyjny (interfejs UART) ramek danych zawierających dane o pracy manipulatora. Wykorzystując interfejs klasy \textit{ManipulatorStateMachine} odczytywane są prędkości wszystkich członów oraz aktualny stan. Komunikacja ze sterownikiem jest wzorowana na protokole serw Dynamixel. Ramka składa się z dwóch pól nagłówka (o wartości $0xFF$), bajtu definiującego stan pracy, pola długości nagłówka. Po nich następuje następuje wysyłanie bajtów danych (wartości prędkości) i sumy kontrolnej (SK) obliczanej zgodnie ze wzorem \ref{eq:9}. 
+\paragraph{Zadanie \textit{VelocitySendTask}} polega na wysyłaniu poprzez bufor komunikacyjny (interfejs UART) ramek danych zawierających dane o pracy manipulatora. Wykorzystując interfejs klasy \textit{ManipulatorStateMachine} odczytywane są prędkości wszystkich członów oraz aktualny stan. Komunikacja ze sterownikiem jest wzorowana na protokole serw Dynamixel. Ramka składa się z dwóch pól nagłówka (o wartości $0xFF$), bajtu definiującego stan pracy, pola długości nagłówka. Po nich następuje następuje wysyłanie bajtów danych (wartości prędkości) i sumy kontrolnej (SK) obliczanej zgodnie ze wzorem \eqref{eq:9}. 
 
 \begin{table}[htb!]
 \label{comm}
@@ -1313,7 +1316,7 @@ Klasa ta stanowi bazę dla docelowego interfejsu sprzętowego \textit{RobotHWInt
 
 Interfejs sprzętowy wykorzystuje klasę \textit{RobotSerialComm}, która pozwala na wysyłanie i odbieranie danych wykorzystując port szeregowy komputera. Jest ona wykorzystywana do ustawiania parametrów i komunikacji po interfejsie UART z manipulatorem. Przesyłane komunikaty mają taką samą postać jak przedstawiona w opisie komunikacji agenta $a_{robot}$ (\textit{ManipulatorMsg}). Do odbioru danych wykorzystywany jest także bufor cykliczny. W przypadku wystąpienia problemów (odczytanie danych nie powiodło się przez 20 ms) następuje przerwanie komunikacji.
 
-\paragraph{Wirtualny receptor $r_{sim1}$} wykorzystuje węzeł \textit{/spacenav} do konwertowania wartości wychyleń myszy 3D i wysyłania ich w temacie \textit{/spacenav/twist}. Do tego tematu zostaje podpięty subskrybent \textit{twistSub}, który wywołuje funkcję \textit{newVelCallback()} ilekroć na temacie spacenav zostaje opublikowana nowa wiadomość. W zależności od trybu pracy dane pozyskane z tematu dotyczą zadania prędkości końcówki (narzędziu) lub pojedynczych przegubów. Jeżeli sterownik pracuje w trybie złączowym, wartość wychylenia przeliczane są do prędkości względem ich maksymalnych wartości. W innym przypadku dodatkowo wykorzystywana biblioteka \textit{kdl}, która posiada solvery prostej i odwrotnej kinematyki. Zadana prędkość narzędzia przeliczana jest do wymaganych do jej uzyskania prędkości poszczególnych członów poprzez rozwiązania zadania odwrotnego kinematyki dla prędkości. Aby było to możliwe w trakcie inicjalizacji interfejsu definiowany jest łańcuch kinematyczny \textit{kinematicChain} manipulatora, który jednoznacznie opisuje położenie członów względem siebie. Opis łańcucha kinematycznego wykonano na podstawie parametrów Denavita-Hartenberga manipulatora przedstawionych w rozdziale 3.
+\paragraph{Wirtualny receptor $r_{sim1}$} wykorzystuje węzeł \textit{/spacenav} do konwertowania wartości wychyleń myszy 3D i wysyłania ich w temacie \textit{/spacenav/twist}. Do tego tematu zostaje podpięty subskrybent \textit{twistSub}, który wywołuje funkcję \textit{newVelCallback()} ilekroć na temacie spacenav zostaje opublikowana nowa wiadomość. W zależności od trybu pracy dane pozyskane z tematu dotyczą zadania prędkości końcówki (narzędziu) lub pojedynczych przegubów. Jeżeli sterownik pracuje w trybie złączowym, wartość wychylenia przeliczane są do prędkości względem ich maksymalnych wartości. W innym przypadku dodatkowo wykorzystywana jest biblioteka \textit{kdl}, która posiada solvery prostej i odwrotnej kinematyki. Zadana prędkość narzędzia przeliczana jest do wymaganych do jej uzyskania prędkości poszczególnych członów poprzez rozwiązania zadania odwrotnego kinematyki dla prędkości. Aby było to możliwe w trakcie inicjalizacji interfejsu definiowany jest łańcuch kinematyczny \textit{kinematicChain} manipulatora, który jednoznacznie opisuje położenie członów względem siebie. Opis łańcucha kinematycznego wykonano na podstawie parametrów Denavita-Hartenberga manipulatora przedstawionych w rozdziale 3.
 
 \paragraph{Symulacja} została przygotowana wykorzystując program Gazebo. W celu zdefiniowania modelu fizycznego i wizualnego robota wykorzystano format URDF. Każdy z członów oprócz standardowych parametrów takich jak masa, punkt początkowy, materiał, geometria i rodzaj i ograniczenia przegubów ma zdefiniowany ponadto dodatkowy element \textit{transmission}, który służy do połączenia sterowników biblioteki \textit{ros\_control} z symulatorem. Na podstawie pliku URDF tworzony jest model manipulatora pokazany poniżej:
 
@@ -1337,12 +1340,25 @@ Interfejs sprzętowy wykorzystuje klasę \textit{RobotSerialComm}, która pozwal
 \vspace*{1.5 cm}
 \section{Podsumowanie}
 \vspace{3.0 cm}
+Celem niniejszej pracy było opracowanie systemu sterowania do manipulatora o 6 stopniach swobody, który pozwalałby na bezpieczne testowanie ruchu robota w środowisku symulacyjnym.
 
+\subsection{Wyniki działania systemu}
+%TODO
+\subsection{Wnioski}
+%TODO
+\subsection{Perspektywy rozwoju}
+%TODO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section*{DODATEK A. Zawartość płyty CD}
 \addcontentsline{toc}{section}{DODATEK A. ZAWARTOŚĆ PŁYTY CD}
 \vspace{3.0 cm}
+Płyta CD, która została dołączona do pracy magisterskiej zawiera tekst w formacie pdf, programy symulacji i sterujący mikrokontrolera STM32F407-VET oraz pliki wynikowe przeprowadzonych testów. Układ danych w nośniku jest następujący:
+\begin{itemize}
+\item folder \textit{tekst} zawiera plik Marcin\_Baran\_praca\_mgr.pdf,
+\item folder \textit{oprogramowanie} zawiera kod źródłowy mikrokontrolera i oprogramowania symulacyjnego odpowiednio w folderach \textit{STM32F4} i \textit{symulacja},
+\item folder \textit{testy} zawiera pliki z danymi uzyskanymi podczas weryfikacji systemu.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage

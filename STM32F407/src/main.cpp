@@ -78,12 +78,12 @@ int main(void)
 
   if(usartQueue != NULL && rs485Queue != NULL)
   {
-	  xTaskCreate(stateMachineHandler, "StateMachine",
+	  xTaskCreate(stateMachineHandler, "StateMachineTask",
 			  	  20*configMINIMAL_STACK_SIZE,
 				  (void*)&stMachine , 2, stateMachineHandle);
 	  wakeTaskHandle = stateMachineHandle;
 
-	  xTaskCreate(velocitySendHandler, "VelocitySend",
+	  xTaskCreate(velocitySendHandler, "VelocitySendTask",
 		  	  	  5*configMINIMAL_STACK_SIZE,
 				  (void*)&stMachine, 1, velocitySendTask);
 
@@ -131,6 +131,8 @@ void velocitySendHandler(void* args)
 			msgSend.checksum += msgSend.params[i] + msgSend.params[i+1];
 		}
 		msgSend.checksum ~= msgSend.checksum;
+		send_char(0xff, USART2);
+		send_char(0xff, USART2);
 		send_char(msgSend.type, USART2);
 		send_char(msgSend.length, USART2);
 		for(int i = 0; i < 2*NUM_JOINTS; ++i)
