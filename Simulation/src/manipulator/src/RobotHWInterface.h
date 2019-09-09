@@ -6,6 +6,7 @@
 #include <sensor_msgs/JointState.h>
 #include <kdl/kdl.hpp>
 #include <kdl/chain.hpp>
+#include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 
@@ -24,8 +25,7 @@ static const double VELOCITY_STEP_FACTOR = 10;
 enum CONTROLLER_TYPE
 {
     VELOCITY_CONTROLLER = 0,
-    POSITION_CONTROLLER,
-    EFFORT_CONTROLLER
+    POSITION_CONTROLLER
 };
 
 class RobotHWInterface : public RobotHWInterfaceBase
@@ -49,8 +49,8 @@ protected:
 
     ros::Subscriber jointStateSub;
     ros::Subscriber twistSub;
-    ros::Publisher poseStampedPub;
-    ros::Publisher jointStatePub;
+//    ros::Publisher poseStampedPub;
+//    ros::Publisher jointStatePub;
     ros::Publisher commandPub[6];
 
     PositionJointSoftLimitsInterface positionJointSoftLimitsInterface;
@@ -67,6 +67,7 @@ protected:
     double rate;
 
     void newVelCallback(const geometry_msgs::Twist &msg);
+    void newPosCallback(const sensor_msgs::JointState &msg);
     geometry_msgs::PoseStamped solveDirectKinematics(const sensor_msgs::JointState &msg);
     KDL::JntArray solveIndirectKinematics(const geometry_msgs::Twist &msg);
 };

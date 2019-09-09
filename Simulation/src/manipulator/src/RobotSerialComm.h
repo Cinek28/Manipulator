@@ -7,6 +7,7 @@
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()
+#include <string.h>
 
 #include "CyclicBuffer.h"
 
@@ -28,7 +29,7 @@ struct ManipulatorMsg
 	unsigned char length;
 	unsigned char params[MAX_PARAMS];
 	unsigned char checksum;
-}
+};
 
 class RobotSerialComm
 {
@@ -40,8 +41,8 @@ public:
 	bool openPort( int port = 0, int baudrate = 9600 );
 	bool closePort( void );
 
-	int sendData( const char *, int );
-	int readData( void );
+	int sendData( ManipulatorMsg*);
+	bool readData( ManipulatorMsg* );
 
 	bool isOpened( void ){ return( portOpened ); }
 
@@ -54,7 +55,7 @@ protected:
 	cyclicBuffer buffer;
 
 	bool writeByte( unsigned char );
-	int readByte( void *, int );
+	bool readByte( unsigned char* );
 };
 
 #endif

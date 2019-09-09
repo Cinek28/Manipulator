@@ -39,10 +39,8 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
     // Sub geometry_msgs::Twist
     twistSub = nodeHandle.subscribe("/spacenav/twist",1,&RobotHWInterface::newVelCallback, this);
 
-//    // Pub geometry_msgs/PoseStamped
-//    poseStampedPub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/robot_pose", 1);
-//
-//    jointStatePub = nodeHandle.advertise<sensor_msgs::JointState>("/joint_states", 1);
+    // Sub sensor_msgs::JointState
+    jointStateSub = nodeHandle.subscribe("/manipulator/joint_states",1,&RobotHWInterface::newPosCallback, this);
 
     // Pub external controller steering commands:
     commandPub[0] = nodeHandle.advertise<std_msgs::Float64>("/manipulator/shoulder_rotation_controller/command", 1);
@@ -142,8 +140,10 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
     {
         for(int i = 0; i < numJoints; ++i)
         {
-            ROS_INFO("Setting command to %s, %d: %f",jointNames[i].c_str(), i, jointVelocities(i));
             velocityJointInt.getHandle(jointNames[i]).setCommand(jointVelocities(i));
+            std_msgs::Float64 velocity;
+            velocity.data = jointVelocities(i);
+            commandPub[i].publish(velocity);
         }
     }
     else
@@ -154,12 +154,11 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
         msg.checksum = msg.type + msg.length;
         for (int i = 0; i < numJoints; i++)
         {
-            // TODO: Write joints velocities/efforts
             msg.params[i] = (uint8_t)jointVelocities(i);
-            msg.params[i+1] = (uint8_t)(jointVelocities(i) >> 8);
+            msg.params[i+1] = (uint8_t)((uint16_t)jointVelocities(i) >> 8);
             msg.checksum += msg.params[i] + msg.params[i+1];
         }
-        msg.checksum ~= msg.checksum;
+        msg.checksum = ~msg.checksum;
         robot.sendData(&msg);
     }
 }
@@ -181,42 +180,55 @@ KDL::JntArray RobotHWInterface::solveIndirectKinematics(const geometry_msgs::Twi
         joint_positions(i)=jointPosition[i];
     }
 
-    // Create the frame that will contain the results
-
-    KDL::Frame cartpos;
-    KDL::ChainFkSolverPos_recursive fksolver(kinematicChain);
+    KDL::ChainFkSolverPos_recursive fksolver(kinematicChain); //Forward position solver
     KDL::ChainIkSolverVel_pinv iksolver(kinematicChain); //Inverse velocity solver
     KDL::JntArray joint_velocities = KDL::JntArray(kinematicChain.getNrOfJoints());
+
     iksolver.CartToJnt(joint_positions, temp_twist, joint_velocities);
 
     return joint_velocities;
 }
 
-void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg) {
-    
+void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg)
+{
+    geometry_msgs::Twist converted_msg = msg;
+    if(fabs(converted_msg.linear.x) < 0.5)
+        converted_msg.linear.x = 0;
+    if(fabs(converted_msg.linear.y) < 0.5)
+        converted_msg.linear.y = 0;
+    if(fabs(converted_msg.linear.z) < 0.5)
+        converted_msg.linear.z = 0;
+    if(fabs(converted_msg.angular.x) < 0.5)
+        converted_msg.angular.x = 0;
+    if(fabs(converted_msg.angular.y) < 0.5)
+        converted_msg.angular.y = 0;
+    if(fabs(converted_msg.linear.x) < 0.5)
+        converted_msg.angular.z = 0;
+
     if(mode == TOOL)
     {
         // Calculate indirect kinematics
-        jointVelocities = solveIndirectKinematics(msg);
+        jointVelocities = solveIndirectKinematics(converted_msg);
     }
-    else
+    else {
+        jointVelocities(0) = converted_msg.linear.x;
+        jointVelocities(1) = converted_msg.linear.y;
+        jointVelocities(2) = converted_msg.linear.z;
+        jointVelocities(3) = converted_msg.angular.x;
+        jointVelocities(4) = converted_msg.angular.y;
+        jointVelocities(5) = converted_msg.angular.z;
+    }
+}
+
+void RobotHWInterface::newPosCallback(const sensor_msgs::JointState& msg)
+{
+    for(int i = 0; i < 6; ++i)
     {
-        jointVelocities(0) = msg.linear.x;
-        jointVelocities(1) = msg.linear.y;
-        jointVelocities(2) = msg.linear.z;
-        jointVelocities(3) = msg.angular.x;
-        jointVelocities(4) = msg.angular.y;
-        jointVelocities(5) = msg.angular.z;
+        if(!isRobotConnected() || mode == IDLE)
+        {
+            jointVelocity[i] = msg.velocity[i];
+            jointPosition[i] = msg.position[i];
+            jointEffort[i] = msg.effort[i];
+        }
     }
-
-    if(fabs(jointVelocities(i)) < 0.5)
-            jointVelocities(i) = 0.0;
-
-    for (int i = 0; i < 6; ++i)
-    {
-        std_msgs::Float64 velocity;
-        velocity.data = jointVelocities(i);
-        // commandPub[i].publish(velocity);
-    }
-
 }
