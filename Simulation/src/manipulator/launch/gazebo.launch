@@ -40,7 +40,8 @@
               wrist_rotation_controller
               wrist_pitch_controller
               gripper_rotation_controller
-              joint_state_controller"/>
+              joint_state_controller
+              joint_trajectory_controller"/>
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher"
