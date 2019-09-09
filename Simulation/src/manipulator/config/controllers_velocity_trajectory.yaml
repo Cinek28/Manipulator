@@ -6,6 +6,38 @@ manipulator:
     type: joint_state_controller/JointStateController
     publish_rate: 50
 
+# Joint trajectory controller settings:
+  joint_trajectory_controller:
+    type: "velocity_controllers/JointTrajectoryController"
+    joints:
+      - shoulder_rotation
+      - forearm_rotation
+      - arm_rotation
+      - wrist_rotation
+      - wrist_pitch
+      - gripper_rotation
+
+    constraints:
+    goal_time: 0.5                   # Override default
+    stopped_velocity_tolerance: 0.02 # Override default
+    head_1_joint:
+      trajectory: 0.05               # Not enforced if unspecified
+      goal: 0.02                     # Not enforced if unspecified
+    head_2_joint:
+      goal: 0.01                     # Not enforced if unspecified
+
+    state_publish_rate:  50            # Override default
+    action_monitor_rate: 50            # Override default
+    stop_trajectory_duration: 0        # Override default
+
+    gains:
+      shoulder_rotation: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      forearm_rotation: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      arm_rotation: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      wrist_rotation: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      wrist_pitch: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      gripper_rotation: {p: 100,  d: 1, i: 1, i_clamp: 1}
+
 # Joint position controllers settings
   shoulder_rotation_controller:
     type: velocity_controllers/JointVelocityController

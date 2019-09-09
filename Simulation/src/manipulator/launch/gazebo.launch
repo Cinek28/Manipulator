@@ -23,7 +23,7 @@
         <!--args="pub /calibrated std_msgs/Bool true"/>-->
 
     <!-- Load joint controller and hardware interface configurations from YAML file to parameter server -->
-    <rosparam file="$(find manipulator)/config/controllers_effort_position.yaml" command="load"/>
+    <rosparam file="$(find manipulator)/config/controllers_effort_trajectory.yaml" command="load"/>
     <rosparam file="$(find manipulator)/config/hardware.yaml" command="load"/>
 
     <!-- Load the controllers -->
@@ -34,13 +34,7 @@
         output="screen"
         ns="/manipulator"
         required="true"
-        args="shoulder_rotation_controller
-              forearm_rotation_controller
-              arm_rotation_controller
-              wrist_rotation_controller
-              wrist_pitch_controller
-              gripper_rotation_controller
-              joint_state_controller
+        args="joint_state_controller
               joint_trajectory_controller"/>
 
     <!-- convert joint states to TF transforms for rviz, etc -->
