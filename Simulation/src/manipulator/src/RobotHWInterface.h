@@ -4,6 +4,8 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/JointState.h>
+#include <trajectory_msgs/JointTrajectory.h>
+
 #include <kdl/kdl.hpp>
 #include <kdl/chain.hpp>
 #include <kdl_parser/kdl_parser.hpp>
@@ -52,6 +54,7 @@ protected:
 //    ros::Publisher poseStampedPub;
 //    ros::Publisher jointStatePub;
     ros::Publisher commandPub[6];
+    ros::Publisher commandTrajectoryPub;
 
     PositionJointSoftLimitsInterface positionJointSoftLimitsInterface;
     std::shared_ptr<controller_manager::ControllerManager> controllerManager;
@@ -68,7 +71,9 @@ protected:
 
     void newVelCallback(const geometry_msgs::Twist &msg);
     void newPosCallback(const sensor_msgs::JointState &msg);
+    void newTrajCallback(const sensor_msgs::JointState &msg);
     geometry_msgs::PoseStamped solveDirectKinematics(const sensor_msgs::JointState &msg);
+    geometry_msgs::PoseStamped solveIndirectPositionKinematics(const sensor_msgs::JointState &msg)
     KDL::JntArray solveIndirectKinematics(const geometry_msgs::Twist &msg);
 };
 
