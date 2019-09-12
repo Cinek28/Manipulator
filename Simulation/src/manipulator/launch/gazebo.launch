@@ -5,11 +5,11 @@
     
     <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
     
-    <!--<node name="tf_footprint_base"-->
-        <!--pkg="tf"-->
-        <!--type="static_transform_publisher"-->
-        <!--required="true"-->
-        <!--args="0 0 0 0 0 0 base_link base_footprint 40"/>-->
+    <node name="tf_footprint_base"
+        pkg="tf"
+        type="static_transform_publisher"
+        required="true"
+        args="0 0 0 0 0 0 base_link world 40"/>
 
     <node name="spawn_model"
         pkg="gazebo_ros"
@@ -17,13 +17,8 @@
         args="-urdf -param /robot_description -model manipulator"
         output="screen"/>
 
-    <!--<node name="fake_joint_calibration"-->
-        <!--pkg="rostopic"-->
-        <!--type="rostopic"-->
-        <!--args="pub /calibrated std_msgs/Bool true"/>-->
-
     <!-- Load joint controller and hardware interface configurations from YAML file to parameter server -->
-    <rosparam file="$(find manipulator)/config/controllers_effort_trajectory.yaml" command="load"/>
+    <rosparam file="$(find manipulator)/config/controllers_effort_position.yaml" command="load"/>
     <rosparam file="$(find manipulator)/config/hardware.yaml" command="load"/>
 
     <!-- Load the controllers -->
@@ -35,7 +30,12 @@
         ns="/manipulator"
         required="true"
         args="joint_state_controller
-              joint_trajectory_controller"/>
+              shoulder_rotation_controller
+              forearm_rotation_controller
+              arm_rotation_controller
+              wrist_pitch_controller
+              wrist_rotation_controller
+              gripper_rotation_controller"/>
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher"
@@ -43,8 +43,10 @@
           type="robot_state_publisher"
           respawn="false"
           output="screen">
-        <remap from="/joint_states" to="/manipulator/joint_states" />
+        <!--<remap from="/joint_states" to="/manipulator/joint_states" />-->
     </node>
+
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
 
     <!-- Load robot hardware interface-->
     <node name="RobotHWInterfaceNode"
@@ -53,12 +55,15 @@
           output="screen"
           required="false"/>
 
-    <!-- Load 3D mouse controller node-->
-    <node name="spacenav_node" pkg="spacenav_node" type="spacenav_node"
-        output="screen" required="false">
+    <!--&lt;!&ndash; Load 3D mouse controller node&ndash;&gt;-->
+    <!--<node name="spacenav_node" pkg="spacenav_node" type="spacenav_node"-->
+        <!--output="screen" required="false">-->
         
-        <param name="zero_when_static" value="true"/>
-        <param name="static_count_threshold" value="30"/>
-    </node>
+        <!--<param name="zero_when_static" value="true"/>-->
+        <!--<param name="static_count_threshold" value="30"/>-->
+    <!--</node>-->
+
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find manipulator)/urdf/urdf.rviz" />
+    <param name="use_gui" value="true" />-->
 
 </launch>

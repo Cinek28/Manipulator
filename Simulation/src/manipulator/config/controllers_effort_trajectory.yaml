@@ -23,7 +23,7 @@ manipulator:
 
     state_publish_rate:  50            # Override default
     action_monitor_rate: 50            # Override default
-    stop_trajectory_duration: 0        # Override default
+#    stop_trajectory_duration: 0        # Override default
 
     gains:
       shoulder_rotation: {p: 100,  d: 1, i: 1, i_clamp: 1}

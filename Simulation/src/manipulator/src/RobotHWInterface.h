@@ -10,6 +10,7 @@
 #include <kdl/chain.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl/chainiksolverpos_nr.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 
 #include "RobotHWInterfaceBase.h"
@@ -51,7 +52,8 @@ protected:
 
     ros::Subscriber jointStateSub;
     ros::Subscriber twistSub;
-//    ros::Publisher poseStampedPub;
+    ros::Subscriber trajSub;
+    ros::Publisher poseStampedPub;
 //    ros::Publisher jointStatePub;
     ros::Publisher commandPub[6];
     ros::Publisher commandTrajectoryPub;
@@ -71,9 +73,9 @@ protected:
 
     void newVelCallback(const geometry_msgs::Twist &msg);
     void newPosCallback(const sensor_msgs::JointState &msg);
-    void newTrajCallback(const sensor_msgs::JointState &msg);
+    void newTrajCallback(const geometry_msgs::Twist &msg);
     geometry_msgs::PoseStamped solveDirectKinematics(const sensor_msgs::JointState &msg);
-    geometry_msgs::PoseStamped solveIndirectPositionKinematics(const sensor_msgs::JointState &msg)
+    KDL::JntArray solveIndirectPositionKinematics(const geometry_msgs::Twist &msg);
     KDL::JntArray solveIndirectKinematics(const geometry_msgs::Twist &msg);
 };
 

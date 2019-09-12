@@ -21,14 +21,23 @@
 
   <arg name="model" />
   <arg name="gui" default="True" />
-  <param name="robot_description" textfile="manipulator_velocity.urdf" />
+  <param name="robot_description" textfile="$(find manipulator)/urdf/manipulator_effort.urdf" />
 
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="robot_state_publisher"
+    respawn="false"
+    output="screen">
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="base_to_world"
+        args="0 0 0 0 0 0  /base_link /world 100" />
+
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find manipulator)/urdf/urdf.rviz -f base_link" />
 
-  <!--<node name="kdl_dkin" pkg="manipulator" type="kdl_dkin" output="screen"></node>-->
+  <node name="kdl_dkin" pkg="manipulator" type="kdl_dkin" output="screen"></node>
 
-  <!--<param name="use_gui" value="$(arg gui)" />-->
+  <param name="use_gui" value="$(arg gui)" />
 
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
 
