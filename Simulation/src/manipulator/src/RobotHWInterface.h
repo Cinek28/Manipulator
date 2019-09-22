@@ -76,7 +76,7 @@ protected:
     void newTrajCallback(const geometry_msgs::Twist &msg);
     geometry_msgs::PoseStamped solveDirectKinematics(const sensor_msgs::JointState &msg);
     KDL::JntArray solveIndirectPositionKinematics(const geometry_msgs::Twist &msg);
-    KDL::JntArray solveIndirectKinematics(const geometry_msgs::Twist &msg);
+    KDL::JntArray solveIndirectVelKinematics(const geometry_msgs::Twist &msg);
 };
 
 #endif //MANIPULATOR_HW

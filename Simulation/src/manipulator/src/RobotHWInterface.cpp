@@ -10,7 +10,6 @@ using joint_limits_interface::SoftJointLimits;
 
 RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
 {
-    init();
     controllerManager.reset(new controller_manager::ControllerManager(this, nodeHandle));
     nodeHandle.param("/manipulator/hardware_interface/rate", rate, 0.1);
 
@@ -23,7 +22,7 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
         return;
     }
 
-    robot_tree.getChain("base_link", "arm_link", kinematicChain);
+    robot_tree.getChain("base_link", "gripper_link", kinematicChain);
 
 //    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::None), KDL::Frame( KDL::Vector(0, 0, 0.13))));
 
@@ -45,7 +44,9 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
 //    frame = KDL::Frame(KDL::Rotation::EulerZYX(0.0,KDL::PI/2,0.0),KDL::Vector(0.0, 0.0, -0.15));
 //    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
 
-    jointVelocities = KDL::JntArray(kinematicChain.getNrOfJoints());
+    init();
+
+    jointVelocities = KDL::JntArray(numJoints);
 
     // Sub geometry_msgs::Twist
     twistSub = nodeHandle.subscribe("/spacenav/twist",1,&RobotHWInterface::newVelCallback, this);
@@ -78,7 +79,8 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
     for(int i = 0; i < numJoints; ++i)
         commandPub[i].publish(initial_vel);
 
-    nonRealtimeTask = nodeHandle.createTimer(ros::Duration(1.0 / rate), &RobotHWInterface::update, this);
+    nonRealtimeTask = nodeHandle.createTimer(ros::Duration(1.0 / rate),
+                                             &RobotHWInterface::update, this);
 }
 
 RobotHWInterface::~RobotHWInterface()
@@ -89,7 +91,7 @@ void RobotHWInterface::init()
 {
     // Get joint names
     nodeHandle.getParam("/manipulator/hardware_interface/joints", jointNames);
-    numJoints = jointNames.size();
+    numJoints = kinematicChain.getNrOfJoints();
     ROS_INFO("Number of joints: %d", numJoints);
 
     // Resize vectors
@@ -125,6 +127,9 @@ void RobotHWInterface::init()
         effortJointInt.registerHandle(jointEffortHandle);
     }
 
+    for(int i = 0; i < numJoints; ++i)
+        ROS_INFO("Joint %d name: %s", i, jointNames[i].c_str());
+
     registerInterface(&jointStateInt);
     registerInterface(&velocityJointInt);
     registerInterface(&positionJointInt);
@@ -137,9 +142,9 @@ void RobotHWInterface::init()
 void RobotHWInterface::update(const ros::TimerEvent &e)
 {
     elapsedTime = ros::Duration(e.current_real - e.last_real);
-//    read();
-//    controllerManager->update(ros::Time::now(), elapsedTime);
-//    write(elapsedTime);
+    read();
+    controllerManager->update(ros::Time::now(), elapsedTime);
+    write(elapsedTime);
 }
 
 void RobotHWInterface::read()
@@ -191,10 +196,13 @@ RobotHWInterface::solveDirectKinematics(const sensor_msgs::JointState &msg)
     //Create joint array
     KDL::JntArray joint_positions =
             KDL::JntArray(kinematicChain.getNrOfJoints());
-    for(int i = 0; i < 2; ++i)
-    {
-        joint_positions(i) = msg.position.at(i);
-    }
+
+    joint_positions(0) = msg.position[3];
+    joint_positions(1) = msg.position[1];
+    joint_positions(2) = msg.position[0];
+    joint_positions(3) = msg.position[5];
+    joint_positions(4) = msg.position[4];
+    joint_positions(5) = msg.position[2];
 
     // Create the frame that will contain the results
     KDL::Frame cartpos;
@@ -220,7 +228,9 @@ RobotHWInterface::solveDirectKinematics(const sensor_msgs::JointState &msg)
     return tool_pose;
 }
 
-KDL::JntArray RobotHWInterface::solveIndirectKinematics(const geometry_msgs::Twist &msg) {
+KDL::JntArray
+RobotHWInterface::solveIndirectVelKinematics(
+        const geometry_msgs::Twist &msg) {
 
     KDL::Twist temp_twist;
     temp_twist.vel.x(msg.linear.x);
@@ -231,10 +241,11 @@ KDL::JntArray RobotHWInterface::solveIndirectKinematics(const geometry_msgs::Twi
     temp_twist.rot.z(msg.angular.z);
 
     //Create joint array
-    KDL::JntArray joint_positions = KDL::JntArray(kinematicChain.getNrOfJoints());
+    KDL::JntArray joint_positions =
+            KDL::JntArray(kinematicChain.getNrOfJoints());
     for(int i = 0; i < numJoints; ++i)
     {
-        joint_positions(i)=jointPosition[i];
+        joint_positions(i) = jointPosition[i];
     }
 
     KDL::ChainFkSolverPos_recursive fksolver(kinematicChain); //Forward position solver
@@ -255,8 +266,9 @@ KDL::JntArray RobotHWInterface::solveIndirectPositionKinematics
                    KDL::Vector(msg.linear.x, msg.linear.y, msg.linear.z));
 
     // Create joint array
-    KDL::JntArray joint_positions = KDL::JntArray(kinematicChain.getNrOfJoints());
-    for(int i = 0; i < numJoints; ++i)
+    KDL::JntArray joint_positions =
+            KDL::JntArray(kinematicChain.getNrOfJoints());
+    for(int i = 0; i < kinematicChain.getNrOfJoints(); ++i)
     {
         joint_positions(i)=jointPosition[i];
     }
@@ -277,23 +289,23 @@ KDL::JntArray RobotHWInterface::solveIndirectPositionKinematics
 void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg)
 {
     geometry_msgs::Twist converted_msg = msg;
-    if(fabs(converted_msg.linear.x) < 0.5)
-        converted_msg.linear.x = 0;
-    if(fabs(converted_msg.linear.y) < 0.5)
-        converted_msg.linear.y = 0;
-    if(fabs(converted_msg.linear.z) < 0.5)
-        converted_msg.linear.z = 0;
-    if(fabs(converted_msg.angular.x) < 0.5)
-        converted_msg.angular.x = 0;
-    if(fabs(converted_msg.angular.y) < 0.5)
-        converted_msg.angular.y = 0;
-    if(fabs(converted_msg.linear.x) < 0.5)
-        converted_msg.angular.z = 0;
+//    if(fabs(converted_msg.linear.x) < 0.5)
+//        converted_msg.linear.x = 0;
+//    if(fabs(converted_msg.linear.y) < 0.5)
+//        converted_msg.linear.y = 0;
+//    if(fabs(converted_msg.linear.z) < 0.5)
+//        converted_msg.linear.z = 0;
+//    if(fabs(converted_msg.angular.x) < 0.5)
+//        converted_msg.angular.x = 0;
+//    if(fabs(converted_msg.angular.y) < 0.5)
+//        converted_msg.angular.y = 0;
+//    if(fabs(converted_msg.linear.x) < 0.5)
+//        converted_msg.angular.z = 0;
 
     if(mode == TOOL)
     {
         // Calculate indirect kinematics
-        jointVelocities = solveIndirectKinematics(converted_msg);
+        jointVelocities = solveIndirectVelKinematics(converted_msg);
     }
     else {
         jointVelocities(0) = converted_msg.linear.x;
@@ -307,15 +319,30 @@ void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg)
 
 void RobotHWInterface::newPosCallback(const sensor_msgs::JointState &msg)
 {
-    for(int i = 0; i < numJoints; ++i)
-    {
+//    for(int i = 0; i < numJoints; ++i)
+//    {
         if(!isRobotConnected() || mode == IDLE)
         {
-            jointVelocity[i] = msg.velocity[i];
-            jointPosition[i] = msg.position[i];
-            jointEffort[i] = msg.effort[i];
+            jointVelocity[0] = msg.velocity[3];
+            jointVelocity[1] = msg.velocity[1];
+            jointVelocity[2] = msg.velocity[0];
+            jointVelocity[3] = msg.velocity[5];
+            jointVelocity[4] = msg.velocity[4];
+            jointVelocity[5] = msg.velocity[2];
+            jointEffort[0] = msg.effort[3];
+            jointEffort[1] = msg.effort[1];
+            jointEffort[2] = msg.effort[0];
+            jointEffort[3] = msg.effort[5];
+            jointEffort[4] = msg.effort[4];
+            jointEffort[5] = msg.effort[2];
+            jointPosition[0] = msg.position[3];
+            jointPosition[1] = msg.position[1];
+            jointPosition[2] = msg.position[0];
+            jointPosition[3] = msg.position[5];
+            jointPosition[4] = msg.position[4];
+            jointPosition[5] = msg.position[2];
         }
-    }
+//    }
 
     geometry_msgs::PoseStamped tool_pose = solveDirectKinematics(msg);
     poseStampedPub.publish(tool_pose);
@@ -335,15 +362,11 @@ void RobotHWInterface::newTrajCallback(const geometry_msgs::Twist &msg)
 
     traj.points[0].positions.resize(numJoints);
 
-    traj.joint_names[0] = "shoulder_rotation";
-    traj.joint_names[1] = "forearm_rotation";
-    traj.joint_names[2] = "arm_rotation";
-    traj.joint_names[3] = "wrist_pitch";
-    traj.joint_names[4] = "wrist_rotation";
-    traj.joint_names[5] = "gripper_rotation";
+    for(int i = 0; i < numJoints; ++i)
+        traj.joint_names[i] = jointNames[i];
 
     traj.header.stamp = ros::Time::now();
-    traj.points[0].time_from_start = ros::Duration(1);
+    traj.points[0].time_from_start = ros::Duration(10);
 
     for(int i = 0; i < numJoints; ++i)
         traj.points[0].positions[i] = trajPoint(i);

@@ -1,7 +1,7 @@
 <launch>
 
-    <arg name="robot_description" default="$(find manipulator)/urdf/manipulator_effort.urdf"/>
-    <param name="/robot_description" textfile="$(find manipulator)/urdf/manipulator_effort.urdf" />
+    <arg name="robot_description" default="$(find manipulator)/urdf/manipulator_velocity.urdf"/>
+    <param name="/robot_description" textfile="$(find manipulator)/urdf/manipulator_velocity.urdf" />
     
     <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
     
@@ -18,7 +18,7 @@
         output="screen"/>
 
     <!-- Load joint controller and hardware interface configurations from YAML file to parameter server -->
-    <rosparam file="$(find manipulator)/config/controllers_effort_position.yaml" command="load"/>
+    <rosparam file="$(find manipulator)/config/controllers_velocity_position.yaml" command="load"/>
     <rosparam file="$(find manipulator)/config/hardware.yaml" command="load"/>
 
     <!-- Load the controllers -->
@@ -43,10 +43,8 @@
           type="robot_state_publisher"
           respawn="false"
           output="screen">
-        <!--<remap from="/joint_states" to="/manipulator/joint_states" />-->
+        <remap from="/joint_states" to="/manipulator/joint_states" />
     </node>
-
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
 
     <!-- Load robot hardware interface-->
     <node name="RobotHWInterfaceNode"
@@ -58,7 +56,7 @@
     <!--&lt;!&ndash; Load 3D mouse controller node&ndash;&gt;-->
     <!--<node name="spacenav_node" pkg="spacenav_node" type="spacenav_node"-->
         <!--output="screen" required="false">-->
-        
+        <!---->
         <!--<param name="zero_when_static" value="true"/>-->
         <!--<param name="static_count_threshold" value="30"/>-->
     <!--</node>-->
