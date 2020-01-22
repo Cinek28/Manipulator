@@ -22,13 +22,17 @@ using joint_limits_interface::PositionJointSoftLimitsHandle;
 using joint_limits_interface::PositionJointSoftLimitsInterface;
 using joint_limits_interface::SoftJointLimits;
 
-static const double POSITION_STEP_FACTOR = 10;
-static const double VELOCITY_STEP_FACTOR = 10;
 
 enum CONTROLLER_TYPE
 {
     VELOCITY_CONTROLLER = 0,
     POSITION_CONTROLLER
+};
+
+enum INTERPOLATION_TYPE
+{
+    LINEAR = 0,
+    CUBIC
 };
 
 class RobotHWInterface : public RobotHWInterfaceBase
@@ -38,45 +42,71 @@ public:
     ~RobotHWInterface();
 
     void init();
-    void update(const ros::TimerEvent &e);
-    void read();
-    void write(ros::Duration elapsed_time);
 
     bool isRobotConnected(){return robot.isOpened();};
 
-protected:
+    bool setCartPos(const KDL::JntArray *pos,
+        size_t pointsNr,
+        double timeSec,
+        INTERPOLATION_TYPE interp = LINEAR,
+        unsigned interpPoints = 10);
+
+    bool setJntPos(const KDL::JntArray &pos,
+        size_t pointsNr,
+        double timeSec,
+        INTERPOLATION_TYPE interp = LINEAR,
+        unsigned interpPoints = 10);
+
+private:
     ros::NodeHandle nodeHandle;
     ros::Timer nonRealtimeTask;
     ros::Duration controlPeriod;
     ros::Duration elapsedTime;
 
+    ManipulatorCmd mode = TOOL;
+    CONTROLLER_TYPE controller = VELOCITY_CONTROLLER;
+    bool isMoving = false;
+
+    KDL::JntArray jointVelocities;
+    KDL::JntArray jointPositions;
+    KDL::JntArray jointCommand;
+
     ros::Subscriber jointStateSub;
     ros::Subscriber twistSub;
+    ros::Subscriber posSub;
     ros::Subscriber trajSub;
     ros::Publisher poseStampedPub;
 //    ros::Publisher jointStatePub;
     ros::Publisher commandPub[6];
     ros::Publisher commandTrajectoryPub;
 
+    bool setVel(const KDL::JntArray &vel);
+
+    void read();
+    void update(const ros::TimerEvent &e);
+    void write(ros::Duration elapsed_time);
+
+    void newRobotState(const sensor_msgs::JointState &msg);
+
+protected:
+
     PositionJointSoftLimitsInterface positionJointSoftLimitsInterface;
     std::shared_ptr<controller_manager::ControllerManager> controllerManager;
 
-    KDL::JntArray jointVelocities;
     KDL::Chain kinematicChain;
 
     RobotSerialComm robot;
-    ManipulatorCmd mode = TOOL;
-    CONTROLLER_TYPE controller = VELOCITY_CONTROLLER;
 
     double p_error_, v_error_, e_error_;
     double rate;
 
     void newVelCallback(const geometry_msgs::Twist &msg);
-    void newPosCallback(const sensor_msgs::JointState &msg);
+    void newPosCallback(const geometry_msgs::Twist &msg);
     void newTrajCallback(const geometry_msgs::Twist &msg);
-    geometry_msgs::PoseStamped solveDirectKinematics(const sensor_msgs::JointState &msg);
-    KDL::JntArray solveIndirectPositionKinematics(const geometry_msgs::Twist &msg);
-    KDL::JntArray solveIndirectVelKinematics(const geometry_msgs::Twist &msg);
+
+    KDL::Frame solveDirectKinematics(const KDL::JntArray &pos);
+    KDL::JntArray solveIndirectPosKinematics(const KDL::JntArray &vel);
+    KDL::JntArray solveIndirectVelKinematics(const KDL::JntArray &pos);
 };
 
 #endif //MANIPULATOR_HW

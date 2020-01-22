@@ -16,6 +16,7 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
     KDL::Tree robot_tree;
     std::string robot_desc_string;
     nodeHandle.param("robot_description", robot_desc_string, std::string());
+
     if (!kdl_parser::treeFromString(robot_desc_string, robot_tree))
     {
         ROS_ERROR("Failed to construct kdl tree!");
@@ -24,38 +25,23 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
 
     robot_tree.getChain("base_link", "gripper_link", kinematicChain);
 
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::None), KDL::Frame( KDL::Vector(0, 0, 0.13))));
-
-//    KDL::Frame frame = KDL::Frame(KDL::Rotation::RPY(KDL::PI/2,0.0,0.0),KDL::Vector(0, 0.00175, 0.0705));
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
-//
-//    frame = KDL::Frame(KDL::Rotation::RPY(0.0,0.0,-1.283),KDL::Vector(0, 0.6, 0.0));
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
-
-//    frame = KDL::Frame(KDL::Rotation::EulerZYX(0.0,-KDL::PI/2,0.0),KDL::Vector(0.408, 0.005, 0.0));
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
-//
-//    frame = KDL::Frame(KDL::Rotation::EulerZYX(-KDL::PI/2,0.0,3*KDL::PI/2),KDL::Vector(0.0, 0.0, -0.129));
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
-//
-//    frame = KDL::Frame(KDL::Rotation::EulerZYX(0.0,-KDL::PI/2,0.0),KDL::Vector(0.0643, 0.0, 0.0));
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
-//
-//    frame = KDL::Frame(KDL::Rotation::EulerZYX(0.0,KDL::PI/2,0.0),KDL::Vector(0.0, 0.0, -0.15));
-//    kinematicChain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), frame));
-
     init();
 
     jointVelocities = KDL::JntArray(numJoints);
+    jointPositions = KDL::JntArray(numJoints);
+    jointCommand = KDL::JntArray(numJoints);
 
     // Sub geometry_msgs::Twist
-    twistSub = nodeHandle.subscribe("/spacenav/twist",1,&RobotHWInterface::newVelCallback, this);
+    twistSub = nodeHandle.subscribe("/spacenav/twist", 1, &RobotHWInterface::newVelCallback, this);
 
-    // Sub sensor_msgs::JointState
-    jointStateSub = nodeHandle.subscribe("/manipulator/joint_states",1,&RobotHWInterface::newPosCallback, this);
+    // Sub geometry_msgs::Twist position
+    posSub = nodeHandle.subscribe("/manipulator/position", 1, &RobotHWInterface::newPosCallback, this);
 
     // Sub trajectory msg:
-    trajSub = nodeHandle. subscribe("/manipulator/new_point_trajectory",1,&RobotHWInterface::newTrajCallback, this);
+    trajSub = nodeHandle. subscribe("/manipulator/new_point_trajectory", 1, &RobotHWInterface::newTrajCallback, this);
+
+    // Sub sensor_msgs::JointState
+    jointStateSub = nodeHandle.subscribe("/manipulator/joint_states", 1, &RobotHWInterface::newRobotState, this);
 
     // Pub external controller steering commands:
     commandPub[0] = nodeHandle.advertise<std_msgs::Float64>("/manipulator/shoulder_rotation_controller/command", 1);
@@ -80,7 +66,7 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
         commandPub[i].publish(initial_vel);
 
     nonRealtimeTask = nodeHandle.createTimer(ros::Duration(1.0 / rate),
-                                             &RobotHWInterface::update, this);
+        &RobotHWInterface::update, this);
 }
 
 RobotHWInterface::~RobotHWInterface()
@@ -106,25 +92,28 @@ void RobotHWInterface::init()
     for (int i = 0; i < numJoints; ++i)
     {
         // Create joint state interface
-        JointStateHandle jointStateHandle(jointNames[i], &jointPosition[i], &jointVelocity[i], &jointEffort[i]);
-        jointStateInt.registerHandle(jointStateHandle);
+        jointStateInt.registerHandle(JointStateHandle(jointNames[i],
+            &jointPosition[i], &jointVelocity[i], &jointEffort[i]));
 
         // Create position joint interface
-        JointHandle jointPositionHandle(jointStateHandle, &jointPositionCommands[i]);
 //        JointLimits limits;
 //        SoftJointLimits softLimits;
 //        getJointLimits(jointNames[i], nodeHandle, limits);
 //        PositionJointSoftLimitsHandle jointLimitsHandle(jointPositionHandle, limits, softLimits);
 //        positionJointSoftLimitsInterface.registerHandle(jointLimitsHandle);
-        positionJointInt.registerHandle(jointPositionHandle);
+        positionJointInt.registerHandle(
+            JointHandle(jointStateInt.getHandle(jointNames[i]),
+            &jointPositionCommands[i]));
 
         //Create velocity joint interface:
-        JointHandle jointVelocityHandle(jointStateHandle, &jointVelocityCommands[i]);
-        velocityJointInt.registerHandle(jointVelocityHandle);
+        velocityJointInt.registerHandle(
+            JointHandle(jointStateInt.getHandle(jointNames[i]),
+            &jointVelocityCommands[i]));
 
         // Create effort joint interface
-        JointHandle jointEffortHandle(jointStateHandle, &jointEffortCommands[i]);
-        effortJointInt.registerHandle(jointEffortHandle);
+        effortJointInt.registerHandle(
+            JointHandle(jointStateInt.getHandle(jointNames[i]),
+            &jointEffortCommands[i]));
     }
 
     for(int i = 0; i < numJoints; ++i)
@@ -163,14 +152,29 @@ void RobotHWInterface::read()
 void RobotHWInterface::write(ros::Duration elapsed_time)
 {
 //    positionJointSoftLimitsInterface.enforceLimits(elapsed_time);
+    if(mode == TOOL)
+    {
+        // Calculate indirect kinematics
+        if(controller == VELOCITY_CONTROLLER)
+            jointCommand = solveIndirectVelKinematics(jointVelocities);
+        else
+            jointCommand = solveIndirectPosKinematics(jointPositions);  
+    }
+
     if(!isRobotConnected() || mode == IDLE)
     {
         for(int i = 0; i < numJoints; ++i)
         {
-            velocityJointInt.getHandle(jointNames[i]).setCommand(jointVelocities(i));
-            std_msgs::Float64 velocity;
-            velocity.data = jointVelocities(i);
-            commandPub[i].publish(velocity);
+            if(controller == VELOCITY_CONTROLLER) {
+                velocityJointInt.getHandle(jointNames[i]).setCommand(jointCommand(i));
+            }
+            else {
+                positionJointInt.getHandle(jointNames[i]).setCommand(jointCommand(i)); 
+            }
+
+            std_msgs::Float64 command;
+            command.data = jointCommand(i);
+            commandPub[i].publish(command);
         }
     }
     else
@@ -181,8 +185,8 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
         msg.checksum = msg.type + msg.length;
         for (int i = 0; i < numJoints; i++)
         {
-            msg.params[i] = (uint8_t)jointVelocities(i);
-            msg.params[i+1] = (uint8_t)((uint16_t)jointVelocities(i) >> 8);
+            msg.params[i] = (uint8_t)jointCommand(i);
+            msg.params[i+1] = (uint8_t)((uint16_t)jointCommand(i) >> 8);
             msg.checksum += msg.params[i] + msg.params[i+1];
         }
         msg.checksum = ~msg.checksum;
@@ -190,55 +194,29 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
     }
 }
 
-geometry_msgs::PoseStamped
-RobotHWInterface::solveDirectKinematics(const sensor_msgs::JointState &msg)
+KDL::Frame
+RobotHWInterface::solveDirectKinematics(const KDL::JntArray &pos)
 {
-    //Create joint array
-    KDL::JntArray joint_positions =
-            KDL::JntArray(kinematicChain.getNrOfJoints());
-
-    joint_positions(0) = msg.position[3];
-    joint_positions(1) = msg.position[1];
-    joint_positions(2) = msg.position[0];
-    joint_positions(3) = msg.position[5];
-    joint_positions(4) = msg.position[4];
-    joint_positions(5) = msg.position[2];
-
     // Create the frame that will contain the results
     KDL::Frame cartpos;
     KDL::ChainFkSolverPos_recursive fksolver(kinematicChain);
     // Calculate forward position kinematics
-    fksolver.JntToCart(joint_positions,cartpos);
+    fksolver.JntToCart(pos,cartpos);
 
-    // Fill the position part
-    geometry_msgs::PoseStamped tool_pose;
-
-    tool_pose.pose.position.x = cartpos.p.x();
-    tool_pose.pose.position.y = cartpos.p.y();
-    tool_pose.pose.position.z = cartpos.p.z();
-
-    cartpos.M.GetQuaternion(tool_pose.pose.orientation.x,
-                            tool_pose.pose.orientation.y,
-                            tool_pose.pose.orientation.z,
-                            tool_pose.pose.orientation.w);
-
-    // Transformation is happening in base_link
-    tool_pose.header.frame_id = "base_link";
-
-    return tool_pose;
+    return cartpos;
 }
 
 KDL::JntArray
 RobotHWInterface::solveIndirectVelKinematics(
-        const geometry_msgs::Twist &msg) {
+        const KDL::JntArray &vel) {
 
     KDL::Twist temp_twist;
-    temp_twist.vel.x(msg.linear.x);
-    temp_twist.vel.y(msg.linear.y);
-    temp_twist.vel.z(msg.linear.z);
-    temp_twist.rot.x(msg.angular.x);
-    temp_twist.rot.y(msg.angular.y);
-    temp_twist.rot.z(msg.angular.z);
+    temp_twist.vel.x(vel(0));
+    temp_twist.vel.y(vel(1));
+    temp_twist.vel.z(vel(2));
+    temp_twist.rot.x(vel(3));
+    temp_twist.rot.y(vel(4));
+    temp_twist.rot.z(vel(5));
 
     //Create joint array
     KDL::JntArray joint_positions =
@@ -257,26 +235,27 @@ RobotHWInterface::solveIndirectVelKinematics(
     return joint_velocities;
 }
 
-KDL::JntArray RobotHWInterface::solveIndirectPositionKinematics
-    (const geometry_msgs::Twist &msg)
+KDL::JntArray RobotHWInterface::solveIndirectPosKinematics
+    (const KDL::JntArray &pos)
 {
     // Create destination frame
     KDL::Frame destination = 
-        KDL::Frame(KDL::Rotation::RPY(msg.angular.x, msg.angular.y, msg.angular.z),
-                   KDL::Vector(msg.linear.x, msg.linear.y, msg.linear.z));
+        KDL::Frame(KDL::Rotation::RPY(pos(3), pos(4), pos(5)),
+                   KDL::Vector(pos(0), pos(1), pos(2)));
 
     // Create joint array
     KDL::JntArray joint_positions =
             KDL::JntArray(kinematicChain.getNrOfJoints());
+            
     for(int i = 0; i < kinematicChain.getNrOfJoints(); ++i)
     {
-        joint_positions(i)=jointPosition[i];
+        joint_positions(i) = jointPosition[i];
     }
 
     KDL::ChainFkSolverPos_recursive fksolver(kinematicChain); // Forward pos solver
     KDL::ChainIkSolverVel_pinv iksolver(kinematicChain); // Inverse vel solver
     
-    KDL::ChainIkSolverPos_NR iksolver_pos(kinematicChain,fksolver,iksolver,100,1e-6);
+    KDL::ChainIkSolverPos_NR iksolver_pos(kinematicChain, fksolver, iksolver, 100,1e-6);
 
     KDL::JntArray result = KDL::JntArray(kinematicChain.getNrOfJoints());
 
@@ -288,6 +267,12 @@ KDL::JntArray RobotHWInterface::solveIndirectPositionKinematics
 
 void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg)
 {
+    if (isMoving)
+    {
+        ROS_INFO("Robot is in moving state. Velocity callback ignored.");
+        return;
+    }
+
     geometry_msgs::Twist converted_msg = msg;
 //    if(fabs(converted_msg.linear.x) < 0.5)
 //        converted_msg.linear.x = 0;
@@ -302,57 +287,91 @@ void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg)
 //    if(fabs(converted_msg.linear.x) < 0.5)
 //        converted_msg.angular.z = 0;
 
-    if(mode == TOOL)
-    {
-        // Calculate indirect kinematics
-        jointVelocities = solveIndirectVelKinematics(converted_msg);
-    }
-    else {
-        jointVelocities(0) = converted_msg.linear.x;
-        jointVelocities(1) = converted_msg.linear.y;
-        jointVelocities(2) = converted_msg.linear.z;
-        jointVelocities(3) = converted_msg.angular.x;
-        jointVelocities(4) = converted_msg.angular.y;
-        jointVelocities(5) = converted_msg.angular.z;
-    }
+    jointVelocities(0) = converted_msg.linear.x;
+    jointVelocities(1) = converted_msg.linear.y;
+    jointVelocities(2) = converted_msg.linear.z;
+    jointVelocities(3) = converted_msg.angular.x;
+    jointVelocities(4) = converted_msg.angular.y;
+    jointVelocities(5) = converted_msg.angular.z;
 }
 
-void RobotHWInterface::newPosCallback(const sensor_msgs::JointState &msg)
+void RobotHWInterface::newPosCallback(const geometry_msgs::Twist &msg)
 {
-//    for(int i = 0; i < numJoints; ++i)
-//    {
-        if(!isRobotConnected() || mode == IDLE)
-        {
-            jointVelocity[0] = msg.velocity[3];
-            jointVelocity[1] = msg.velocity[1];
-            jointVelocity[2] = msg.velocity[0];
-            jointVelocity[3] = msg.velocity[5];
-            jointVelocity[4] = msg.velocity[4];
-            jointVelocity[5] = msg.velocity[2];
-            jointEffort[0] = msg.effort[3];
-            jointEffort[1] = msg.effort[1];
-            jointEffort[2] = msg.effort[0];
-            jointEffort[3] = msg.effort[5];
-            jointEffort[4] = msg.effort[4];
-            jointEffort[5] = msg.effort[2];
-            jointPosition[0] = msg.position[3];
-            jointPosition[1] = msg.position[1];
-            jointPosition[2] = msg.position[0];
-            jointPosition[3] = msg.position[5];
-            jointPosition[4] = msg.position[4];
-            jointPosition[5] = msg.position[2];
-        }
-//    }
+    if (isMoving)
+    {
+        ROS_INFO("Robot is in moving state. Position callback ignored.");
+        return;
+    }
 
-    geometry_msgs::PoseStamped tool_pose = solveDirectKinematics(msg);
+    KDL::JntArray pos(6);
+    pos(0) = msg.linear.x;
+    pos(1) = msg.linear.y;
+    pos(2) = msg.linear.z;
+    pos(3) = msg.angular.x;
+    pos(4) = msg.angular.y;
+    pos(5) = msg.angular.z;
+
+    setCartPos(&pos, 1, 6);
+}
+
+void RobotHWInterface::newRobotState(const sensor_msgs::JointState &msg)
+{
+    if(!isRobotConnected() || mode == IDLE)
+    {
+        jointVelocity[0] = msg.velocity[3];
+        jointVelocity[1] = msg.velocity[1];
+        jointVelocity[2] = msg.velocity[0];
+        jointVelocity[3] = msg.velocity[5];
+        jointVelocity[4] = msg.velocity[4];
+        jointVelocity[5] = msg.velocity[2];
+        jointEffort[0] = msg.effort[3];
+        jointEffort[1] = msg.effort[1];
+        jointEffort[2] = msg.effort[0];
+        jointEffort[3] = msg.effort[5];
+        jointEffort[4] = msg.effort[4];
+        jointEffort[5] = msg.effort[2];
+        jointPosition[0] = msg.position[3];
+        jointPosition[1] = msg.position[1];
+        jointPosition[2] = msg.position[0];
+        jointPosition[3] = msg.position[5];
+        jointPosition[4] = msg.position[4];
+        jointPosition[5] = msg.position[2];
+    }
+
+    KDL::JntArray pos(numJoints);
+    for(int i = 0; i < numJoints; ++i)
+        pos(i) = jointPosition[i];
+
+    KDL::Frame tool = solveDirectKinematics(pos);
+
+    // Fill the position part
+    geometry_msgs::PoseStamped tool_pose;
+
+    tool_pose.pose.position.x = tool.p.x();
+    tool_pose.pose.position.y = tool.p.y();
+    tool_pose.pose.position.z = tool.p.z();
+
+    tool.M.GetQuaternion(tool_pose.pose.orientation.x,
+                            tool_pose.pose.orientation.y,
+                            tool_pose.pose.orientation.z,
+                            tool_pose.pose.orientation.w);
+
+    // Transformation is happening in base_link
+    tool_pose.header.frame_id = "base_link";
     poseStampedPub.publish(tool_pose);
-
 }
 
 void RobotHWInterface::newTrajCallback(const geometry_msgs::Twist &msg)
 {
+    KDL::JntArray trajCartPoint = KDL::JntArray(numJoints);
+    trajCartPoint(0) = msg.linear.x;
+    trajCartPoint(1) = msg.linear.y;
+    trajCartPoint(2) = msg.linear.z;
+    trajCartPoint(3) = msg.angular.x;
+    trajCartPoint(4) = msg.angular.y;
+    trajCartPoint(5) = msg.angular.z;
 
-    KDL::JntArray trajPoint = solveIndirectPositionKinematics(msg);
+    KDL::JntArray trajJntPoint = solveIndirectPosKinematics(trajCartPoint);
 
     trajectory_msgs::JointTrajectory traj;
 
@@ -369,9 +388,150 @@ void RobotHWInterface::newTrajCallback(const geometry_msgs::Twist &msg)
     traj.points[0].time_from_start = ros::Duration(10);
 
     for(int i = 0; i < numJoints; ++i)
-        traj.points[0].positions[i] = trajPoint(i);
+        traj.points[0].positions[i] = trajJntPoint(i);
 
     ROS_INFO("Generating trajectory");
 
     commandTrajectoryPub.publish(traj);
+}
+
+bool RobotHWInterface::setVel(const KDL::JntArray &vel)
+{
+    if(vel.rows() != numJoints)
+        return false;
+
+    jointVelocities = vel;
+
+    return true;
+}
+
+bool RobotHWInterface::setCartPos(const KDL::JntArray *pos,
+    size_t pointsNr,
+    double timeSec,
+    INTERPOLATION_TYPE interp,
+    unsigned interpPoints)
+{
+    if(isMoving)
+    {
+        ROS_INFO("Robot is in moving state. Set cart pos ignored.\n");
+        return false;
+    }
+
+    isMoving = true;
+    mode = TOOL;
+    controller = VELOCITY_CONTROLLER;
+
+    KDL::JntArray vel = KDL::JntArray(numJoints);
+    KDL::JntArray newPos = KDL::JntArray(numJoints);
+    KDL::Frame toolPos;
+    double startTime = ros::Time::now().toNSec() / 1000000000;
+    double endTime = startTime + timeSec / interpPoints;
+    ROS_INFO("startTime: %f, endTime: %f\n", startTime, endTime);
+
+    if(interp == LINEAR)
+    {
+        for(int i = 0; i < pointsNr; ++i)
+        {
+            ROS_INFO("Point %d\n", i);
+            if(pos[i].rows() != numJoints)
+            {
+                ROS_INFO("Wrong position array size %d\n", i);
+                KDL::SetToZero(vel);
+                setVel(vel);
+                isMoving = false;
+                return false;
+            }
+
+            for(int j = 0; j < numJoints; ++j)
+                newPos(j) = jointPosition[j];
+
+            toolPos = solveDirectKinematics(newPos);
+            newPos(0) = toolPos.p.x();
+            newPos(1) = toolPos.p.y();
+            newPos(2) = toolPos.p.z();
+            toolPos.M.GetRPY(newPos(3), newPos(4), newPos(5));
+
+            for(int j = 0; j < numJoints; ++j)
+            {
+                vel(j) = (pos[i](j) - newPos(j)) / timeSec;
+            }
+
+            for(int j = 0; j < interpPoints; ++j)
+            {
+                ROS_INFO("Interp Point %d %d\n", i, j);
+                setVel(vel);
+                while(ros::Time::now().toNSec() / 1000000000 < endTime);
+                endTime += timeSec / interpPoints;
+            }
+        }
+    }
+    else
+    {
+        for(int i = 0; i < pointsNr; ++i)
+        {
+            ROS_INFO("Point %d\n", i);
+            if(pos[i].rows() != numJoints)
+            {
+                ROS_INFO("Wrong position array size %d\n", i);
+                KDL::SetToZero(vel);
+                setVel(vel);
+                isMoving = false;
+                return false;
+            }
+
+            for(int j = 0; j < numJoints; ++j)
+                newPos(j) = jointPosition[j];
+
+            toolPos = solveDirectKinematics(newPos);
+            newPos(0) = toolPos.p.x();
+            newPos(1) = toolPos.p.y();
+            newPos(2) = toolPos.p.z();
+            toolPos.M.GetRPY(newPos(3), newPos(4), newPos(5));
+
+            for(int j = 0; j < numJoints; ++j)
+            {
+                vel(j) = (pos[i](j) - newPos(j)) / timeSec;
+            }
+
+            for(int j = 0; j < interpPoints; ++j)
+            {
+                ROS_INFO("Interp Point %d %d\n", i, j);
+                setVel(vel);
+                while(ros::Time::now().toNSec() / 1000000000 < endTime) 
+                    ros::spinOnce();
+                endTime += timeSec / interpPoints;
+            }
+        }
+        ROS_INFO("Cubic interpolation not implemented\n");
+        isMoving = false;
+        return false;
+    }
+
+    ROS_INFO("Ending trajectory\n");
+    KDL::SetToZero(vel);
+    setVel(vel);
+    isMoving = false;
+
+    return true;
+}
+
+bool RobotHWInterface::setJntPos(const KDL::JntArray &pos,
+    size_t pointsNr,
+    double timeSec,
+    INTERPOLATION_TYPE interp,
+    unsigned interpPoints)
+{
+    if(isMoving)
+    {
+        ROS_INFO("Robot is in moving state. Set jnt pos ignored.");
+        return false;
+    }
+
+    isMoving = true;
+    mode = TOOL;
+    controller = VELOCITY_CONTROLLER;
+
+    isMoving = false;
+
+    return false;
 }

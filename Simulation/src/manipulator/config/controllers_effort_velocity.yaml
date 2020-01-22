@@ -10,29 +10,38 @@ manipulator:
   shoulder_rotation_controller:
     type: effort_controllers/JointVelocityController
     joint: shoulder_rotation
-    pid: {p: 100.0, i: 2.0, d: 0.0}
+    pid: {p: 100.0, i: 0.01, d: 0.0}
 
   forearm_rotation_controller:
     type: effort_controllers/JointVelocityController
     joint: forearm_rotation
-    pid: {p: 1200.0, i: 500.0, d: 0.0}
+    pid: {p: 300.0, i: 0.01, d: 0.0}
 
   arm_rotation_controller:
     type: effort_controllers/JointVelocityController
     joint: arm_rotation
-    pid: {p: 550.0, i: 200.0, d: 0.0}
+    pid: {p: 200.0, i: 2.0, d: 0.0}
 
   wrist_rotation_controller:
     type: effort_controllers/JointVelocityController
     joint: wrist_rotation
-    pid: {p: 5, i: 0.0, d: 0.0}
+    pid: {p: 1.0, i: 0.1, d: 0.0}
 
   wrist_pitch_controller:
     type: effort_controllers/JointVelocityController
     joint: wrist_pitch
-    pid: {p: 5.0, i: 0.0, d: 0.0}
+    pid: {p: 20.0, i: 0.2, d: 0.0}
 
   gripper_rotation_controller:
     type: effort_controllers/JointVelocityController
     joint: gripper_rotation
-    pid: {p: 5.0, i: 0.0, d: 0.0}
+    pid: {p: 30.0, i: 0.5, d: 0.0}
+
+  # gazebo_ros_control:
+  #   pid_gains:
+      # shoulder_rotation: {p: 20.0, i: 0.0, d: 0.1}
+  #     forearm_rotation: {p: 350.0, i: 0.0, d: 0.00}
+  #     # arm_rotation: {p: 10.0, i: 0.1, d: 0.0}
+  #     # wrist_rotation: {p: 5.0, i: 3.0, d: 0.0}
+  #     # wrist_pitch: {p: 10.0, i: 3.0, d: 0.0}
+  #     # gripper_rotation: {p: 1.0, i: 1.0, d: 1.0}
