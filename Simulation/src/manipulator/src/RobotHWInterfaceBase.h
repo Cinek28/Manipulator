@@ -4,12 +4,16 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/robot_hw.h>
+
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_interface.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
+
 #include <controller_manager/controller_manager.h>
+
 #include <ros/ros.h>
+#include <kdl/kdl.hpp>
 
 //Hardware interface for manipulator:
 class RobotHWInterfaceBase : public hardware_interface::RobotHW
@@ -31,15 +35,16 @@ protected:
 
     // Shared memory
     int numJoints;
-    int jointMode; // position, velocity, or effort
+
     std::vector<std::string> jointNames;
-    std::vector<int> jointTypes;
-    std::vector<double> jointPosition;
-    std::vector<double> jointVelocity;
-    std::vector<double> jointEffort;
-    std::vector<double> jointPositionCommands;
-    std::vector<double> jointVelocityCommands;
-    std::vector<double> jointEffortCommands;
+
+    KDL::JntArray jointPosition;
+    KDL::JntArray jointVelocity;
+    KDL::JntArray jointEffort;
+
+    KDL::JntArray jointPositionCommands;
+    KDL::JntArray jointVelocityCommands;
+    KDL::JntArray jointEffortCommands;
     // std::vector<double> jointLowerLimits;
     // std::vector<double> jointUpperLimits;
     // std::vector<double> jointEffortLimits;

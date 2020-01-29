@@ -6,7 +6,6 @@
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
-#include <kdl/kdl.hpp>
 #include <kdl/chain.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
@@ -63,13 +62,12 @@ private:
     ros::Duration controlPeriod;
     ros::Duration elapsedTime;
 
-    ManipulatorCmd mode = TOOL;
-    CONTROLLER_TYPE controller = VELOCITY_CONTROLLER;
+    ManipulatorCmd mode = JOINT;
+    CONTROLLER_TYPE controller = POSITION_CONTROLLER;
     bool isMoving = false;
 
     KDL::JntArray jointVelocities;
     KDL::JntArray jointPositions;
-    KDL::JntArray jointCommand;
 
     ros::Subscriber jointStateSub;
     ros::Subscriber twistSub;
@@ -78,9 +76,11 @@ private:
     ros::Publisher poseStampedPub;
 //    ros::Publisher jointStatePub;
     ros::Publisher commandPub[6];
+    ros::Publisher commandPubVelPos[6];
     ros::Publisher commandTrajectoryPub;
 
     bool setVel(const KDL::JntArray &vel);
+    bool setPos(const KDL::JntArray &pos);
 
     void read();
     void update(const ros::TimerEvent &e);

@@ -2,3 +2,4 @@
 *.idea
 *.catkin-workspace
 *.vscode
+build/

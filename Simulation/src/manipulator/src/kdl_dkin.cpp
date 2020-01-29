@@ -66,6 +66,7 @@ KDLSolver::KDLSolver(){
     nh_.param("robot_description", robot_desc_string, std::string());
     if (!kdl_parser::treeFromString(robot_desc_string, robot_tree))
     {
+        ROS_INFO("%s", robot_desc_string.c_str());
         ROS_ERROR("Failed to construct kdl tree!");
         return;
     }
