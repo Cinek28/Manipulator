@@ -50,7 +50,7 @@
               wrist_rotation_controller
               wrist_pitch_controller
               gripper_rotation_controller
-              --timeout 5"/>
+              --timeout 10"/>
 
     <!-- Load robot hardware interface -->
     <node name="RobotHWInterfaceNode"

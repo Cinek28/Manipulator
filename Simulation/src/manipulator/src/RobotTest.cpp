@@ -2,45 +2,64 @@
 
 int main(int argc, char** argv)
 {
-    printf("Test node starting...");
+    bool isCubic = false; 
+
+    if(argc > 1 && argv[1] == "cubic")
+        isCubic = true;
+
+    ROS_INFO("Test node starting...");
+
     ros::init(argc, argv, "RobotTest");
     ros::NodeHandle nh;
-    ros::AsyncSpinner spinner(0);
-    spinner.start();
-    RobotHWInterface Robot(nh);
 
-    printf("Movement\n");
+    std::vector<double> cartStartPosPoints;
+    std::vector<double> cartPosPoints;
+    
+    //First position:
+    cartStartPosPoints.push_back(0.45);
+    cartStartPosPoints.push_back(0.10);
+    cartStartPosPoints.push_back(0.4);
+    cartStartPosPoints.push_back(0.0);
+    cartStartPosPoints.push_back(0.0);
+    cartStartPosPoints.push_back(0.0);
 
-    KDL::JntArray point(6);
-    point(0) = 0.15;
-    point(1) = 0.15;
-    point(2) = 0.3;
-    point(3) = 0.0;
-    point(4) = 0.0;
-    point(5) = -1.57;
+    RobotHWInterface::setCartPos(nh, cartStartPosPoints, 1, 2.0, isCubic);
 
-    printf("Movement\n");
+    //Second position:
+    cartPosPoints.push_back(0.60);
+    cartPosPoints.push_back(0.10);
+    cartPosPoints.push_back(0.4);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
 
-    Robot.setCartPos(&point, 1, 6);
+    //Third position:
+    cartPosPoints.push_back(0.60);
+    cartPosPoints.push_back(-0.10);
+    cartPosPoints.push_back(0.4);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
 
-    point(0) = 0.45;
+    //Fourth position:
+    cartPosPoints.push_back(0.45);
+    cartPosPoints.push_back(-0.10);
+    cartPosPoints.push_back(0.4);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
 
-    Robot.setCartPos(&point, 1, 6);
+    //Fifth position:
+    cartPosPoints.push_back(0.45);
+    cartPosPoints.push_back(0.10);
+    cartPosPoints.push_back(0.4);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
+    cartPosPoints.push_back(0.0);
 
-    point(1) = -0.15;
+    RobotHWInterface::setCartPos(nh, cartPosPoints, 4, 12.0, isCubic);
 
-    Robot.setCartPos(&point, 1, 6);
+    ROS_INFO("Test end\n");
 
-    point(0) = 0.15;
-
-    Robot.setCartPos(&point, 1, 6);
-
-    point(1) = 0.15;
-
-    Robot.setCartPos(&point, 1, 6);
-
-    printf("Test end\n");
-
-    ros::waitForShutdown();
     return 0;
 }

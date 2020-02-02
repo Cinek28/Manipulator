@@ -11,6 +11,7 @@ find_package(catkin REQUIRED cmake_modules COMPONENTS
 		rospy
 		sensor_msgs
 		geometry_msgs
+		message_generation
 		std_msgs
 		tf)
 
@@ -18,6 +19,16 @@ find_package(roslaunch)
 
 find_package(Eigen3 REQUIRED)
 find_package(orocos_kdl REQUIRED)
+
+add_message_files(
+  FILES
+  Trajectory.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
 		CATKIN_DEPENDS
@@ -27,6 +38,7 @@ catkin_package(
 			geometry_msgs
 			std_msgs
 			tf
+			message_runtime
 		DEPENDS
 			EIGEN3)
 
@@ -40,11 +52,19 @@ foreach(dir config launch meshes urdf)
 		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach(dir)
 
-add_executable(kdl_dkin src/kdl_dkin.cpp)
-target_link_libraries(kdl_dkin ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} )
 add_executable(RobotHWInterfaceNode src/RobotHWInterfaceNode.cpp
 		src/RobotHWInterface.cpp src/RobotSerialComm.cpp src/CyclicBuffer.c)
-add_executable(RobotTest src/RobotHWInterfaceNode.cpp
-		src/RobotHWInterface.cpp src/RobotSerialComm.cpp src/CyclicBuffer.c)
+
+add_executable(RobotTest src/RobotTest.cpp src/RobotHWInterface.cpp
+	src/RobotSerialComm.cpp src/CyclicBuffer.c)
+
+add_executable(RobotTestCircle src/RobotTestCircle.cpp src/RobotHWInterface.cpp
+	src/RobotSerialComm.cpp src/CyclicBuffer.c)
+
+add_executable(RobotTestLine src/RobotTestLine.cpp src/RobotHWInterface.cpp
+	src/RobotSerialComm.cpp src/CyclicBuffer.c)
+
 target_link_libraries(RobotHWInterfaceNode ${catkin_LIBRARIES} )
 target_link_libraries(RobotTest ${catkin_LIBRARIES} )
+target_link_libraries(RobotTestCircle ${catkin_LIBRARIES} )
+target_link_libraries(RobotTestLine ${catkin_LIBRARIES} )

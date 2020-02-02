@@ -5,6 +5,9 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <visualization_msgs/Marker.h>
+
+#include <manipulator/Trajectory.h>
 
 #include <kdl/chain.hpp>
 #include <kdl_parser/kdl_parser.hpp>
@@ -44,25 +47,27 @@ public:
 
     bool isRobotConnected(){return robot.isOpened();};
 
-    bool setCartPos(const KDL::JntArray *pos,
+    static bool setCartPos(ros::NodeHandle &nh,
+        const std::vector<double> &pos,
         size_t pointsNr,
         double timeSec,
-        INTERPOLATION_TYPE interp = LINEAR,
+        bool isCubic = false,
         unsigned interpPoints = 10);
 
-    bool setJntPos(const KDL::JntArray &pos,
+    static bool setJntPos(ros::NodeHandle &nh,
+        const std::vector<double> &pos,
         size_t pointsNr,
         double timeSec,
-        INTERPOLATION_TYPE interp = LINEAR,
+        bool isCubic = false,
         unsigned interpPoints = 10);
 
 private:
     ros::NodeHandle nodeHandle;
-    ros::Timer nonRealtimeTask;
+    ros::WallTimer realtimeTask;
     ros::Duration controlPeriod;
     ros::Duration elapsedTime;
 
-    ManipulatorCmd mode = JOINT;
+    ManipulatorCmd mode = TOOL;
     CONTROLLER_TYPE controller = POSITION_CONTROLLER;
     bool isMoving = false;
 
@@ -73,20 +78,29 @@ private:
     ros::Subscriber twistSub;
     ros::Subscriber posSub;
     ros::Subscriber trajSub;
+
     ros::Publisher poseStampedPub;
-//    ros::Publisher jointStatePub;
+    ros::Publisher markerPub;
+    visualization_msgs::Marker markers;
+
     ros::Publisher commandPub[6];
-    ros::Publisher commandPubVelPos[6];
     ros::Publisher commandTrajectoryPub;
 
     bool setVel(const KDL::JntArray &vel);
     bool setPos(const KDL::JntArray &pos);
 
     void read();
-    void update(const ros::TimerEvent &e);
+    void update(const ros::WallTimerEvent &e);
     void write(ros::Duration elapsed_time);
 
     void newRobotState(const sensor_msgs::JointState &msg);
+
+    bool setManipulatorPos(const KDL::JntArray &pos,
+        size_t pointsNr,
+        double timeSec,
+        INTERPOLATION_TYPE interp = LINEAR,
+        unsigned interpPoints = 10,
+        ManipulatorCmd cmdMode = TOOL);
 
 protected:
 
@@ -102,7 +116,7 @@ protected:
 
     void newVelCallback(const geometry_msgs::Twist &msg);
     void newPosCallback(const geometry_msgs::Twist &msg);
-    void newTrajCallback(const geometry_msgs::Twist &msg);
+    void newTrajCallback(const manipulator::Trajectory &msg);
 
     KDL::Frame solveDirectKinematics(const KDL::JntArray &pos);
     KDL::JntArray solveIndirectPosKinematics(const KDL::JntArray &vel);

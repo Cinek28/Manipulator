@@ -6,7 +6,7 @@
     <p>This package contains configuration data, 3D models and launch files
 for manipulator robot</p>
   </description>
-  <author>Cinek2</author>
+  <author>Marcin Baran</author>
   <maintainer email="marcinb280@op.pl" />
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
@@ -18,6 +18,8 @@ for manipulator robot</p>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>tf</build_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
 
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>controller_manager</run_depend>

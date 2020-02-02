@@ -5,10 +5,6 @@
 #include "RobotHWInterface.h"
 
 using namespace hardware_interface;
-using joint_limits_interface::JointLimits;
-using joint_limits_interface::PositionJointSoftLimitsHandle;
-using joint_limits_interface::PositionJointSoftLimitsInterface;
-using joint_limits_interface::SoftJointLimits;
 
 RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
 {
@@ -41,13 +37,6 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
 
     init();
 
-    // controllerManager->loadController("manipulator/shoulder_rotation_controller");
-    // controllerManager->loadController("manipulator/forearm_rotation_controller");
-    // controllerManager->loadController("manipulator/arm_rotation_controller");
-    // controllerManager->loadController("manipulator/wrist_rotation_controller");
-    // controllerManager->loadController("manipulator/wrist_pitch_controller");
-    // controllerManager->loadController("manipulator/gripper_rotation_controller");
-
     jointVelocities = KDL::JntArray(numJoints);
     jointPositions = KDL::JntArray(numJoints);
 
@@ -67,7 +56,7 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
     posSub = nodeHandle.subscribe("/manipulator/position", 1, &RobotHWInterface::newPosCallback, this);
 
     // Sub trajectory msg:
-    trajSub = nodeHandle. subscribe("/manipulator/new_point_trajectory", 1, &RobotHWInterface::newTrajCallback, this);
+    trajSub = nodeHandle.subscribe("/manipulator/trajectory", 1, &RobotHWInterface::newTrajCallback, this);
 
     // Sub sensor_msgs::JointState
     jointStateSub = nodeHandle.subscribe("/manipulator/joint_states", 1, &RobotHWInterface::newRobotState, this);
@@ -80,33 +69,31 @@ RobotHWInterface::RobotHWInterface(ros::NodeHandle &nh) : nodeHandle(nh)
     commandPub[4] = nodeHandle.advertise<std_msgs::Float64>("/manipulator/wrist_pitch_controller/command", 1);
     commandPub[5] = nodeHandle.advertise<std_msgs::Float64>("/manipulator/gripper_rotation_controller/command", 1);
 
-    commandPubVelPos[0] = nodeHandle.advertise<sensor_msgs::JointState>("/manipulator/shoulder_rotation_controller/commandPosVel", 1);
-    commandPubVelPos[1] = nodeHandle.advertise<sensor_msgs::JointState>("/manipulator/forearm_rotation_controller/commandPosVel", 1);
-    commandPubVelPos[2] = nodeHandle.advertise<sensor_msgs::JointState>("/manipulator/arm_rotation_controller/commandPosVel", 1);
-    commandPubVelPos[3] = nodeHandle.advertise<sensor_msgs::JointState>("/manipulator/wrist_rotation_controller/commandPosVel", 1);
-    commandPubVelPos[4] = nodeHandle.advertise<sensor_msgs::JointState>("/manipulator/wrist_pitch_controller/commandPosVel", 1);
-    commandPubVelPos[5] = nodeHandle.advertise<sensor_msgs::JointState>("/manipulator/gripper_rotation_controller/commandPosVel", 1);
-
     // Pub external controller trajectory commands:
     commandTrajectoryPub = nodeHandle.advertise<trajectory_msgs::JointTrajectory>
         ("/manipulator/joint_trajectory_controller/command",1);
 
     // Pub direct kinematic solved pose:
-    poseStampedPub = nodeHandle.advertise<geometry_msgs::PoseStamped>
-            ("/manipulator/tool_pose", 1);
+    poseStampedPub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/manipulator/tool_pose", 1);
 
-    nonRealtimeTask =
-        nodeHandle.createTimer(ros::Duration(1.0 / rate),
-            &RobotHWInterface::update, this);
+    // Pub visualization marker:
+    markerPub = nodeHandle.advertise<visualization_msgs::Marker>("/manipulator/pose_visualization", 1);
+    
+    markers.header.frame_id = "base_link";
+    markers.ns = "manipulator";
+    markers.action = visualization_msgs::Marker::ADD;
+    markers.type = visualization_msgs::Marker::LINE_STRIP;
+    markers.scale.x = 0.005;
+    markers.color.g = 1.0f;
+    markers.color.a = 1.0;
+
+    realtimeTask = nodeHandle.createWallTimer(ros::WallDuration(1.0 / rate), &RobotHWInterface::update, this);
 }
 
 RobotHWInterface::~RobotHWInterface()
 {
     for(int i = 0; i < 6; ++i)
-    {
-        // commandPubVelPos[i].shutdown();
         commandPub[i].shutdown();
-    }
 
     commandTrajectoryPub.shutdown();
     jointStateSub.shutdown();
@@ -114,13 +101,7 @@ RobotHWInterface::~RobotHWInterface()
     posSub.shutdown();
     twistSub.shutdown();
     poseStampedPub.shutdown();
-
-    // controllerManager->unloadController("manipulator/shoulder_rotation_controller");
-    // controllerManager->unloadController("manipulator/forearm_rotation_controller");
-    // controllerManager->unloadController("manipulator/arm_rotation_controller");
-    // controllerManager->unloadController("manipulator/wrist_rotation_controller");
-    // controllerManager->unloadController("manipulator/wrist_pitch_controller");
-    // controllerManager->unloadController("manipulator/gripper_rotation_controller");
+    nodeHandle.shutdown();
 }
 
 void RobotHWInterface::init()
@@ -151,11 +132,6 @@ void RobotHWInterface::init()
     for (int i = 0; i < numJoints; ++i)
     {
         // Create position joint interface
-//        JointLimits limits;
-//        SoftJointLimits softLimits;
-//        getJointLimits(jointNames[i], nodeHandle, limits);
-//        PositionJointSoftLimitsHandle jointLimitsHandle(jointPositionHandle, limits, softLimits);
-//        positionJointSoftLimitsInterface.registerHandle(jointLimitsHandle);
         positionJointInt.registerHandle(
             JointHandle(jointStateInt.getHandle(jointNames[i]),
             &jointPositionCommands(i)));
@@ -177,14 +153,14 @@ void RobotHWInterface::init()
     registerInterface(&velocityJointInt);
     registerInterface(&positionJointInt);
     registerInterface(&effortJointInt);
-//    registerInterface(&positionJointSoftLimitsInterface);
 
     robot.openPort(0, BAUDRATE);
 }
 
-void RobotHWInterface::update(const ros::TimerEvent &e)
+void RobotHWInterface::update(const ros::WallTimerEvent &e)
 {
-    elapsedTime = ros::Duration(e.current_real - e.last_real);
+    elapsedTime =
+        ros::Duration((double)(e.current_real - e.last_real).toNSec()/1000000000);
     read();
     controllerManager->update(ros::Time::now(), elapsedTime);
     write(elapsedTime);
@@ -205,7 +181,6 @@ void RobotHWInterface::read()
 
 void RobotHWInterface::write(ros::Duration elapsed_time)
 {
-//    positionJointSoftLimitsInterface.enforceLimits(elapsed_time);
     if(mode == TOOL)
     {
         // Calculate indirect kinematics
@@ -240,15 +215,9 @@ void RobotHWInterface::write(ros::Duration elapsed_time)
         for(int i = 0; i < numJoints; ++i)
         {
             if(controller == VELOCITY_CONTROLLER)
-            {
-                // velocityJointInt.getHandle(jointNames[i]).setCommand(jointVelocityCommands(i));
                 command.data = jointVelocityCommands(i);
-            }
             else
-            {
-                // positionJointInt.getHandle(jointNames[i]).setCommand(jointPositionCommands(i));
                 command.data = jointPositionCommands(i);
-            }
 
             commandPub[i].publish(command);
         }
@@ -333,7 +302,7 @@ RobotHWInterface::solveIndirectPosKinematics(const KDL::JntArray &pos)
     KDL::ChainFkSolverPos_recursive fksolver(kinematicChain); // Forward pos solver
     KDL::ChainIkSolverVel_pinv iksolver(kinematicChain); // Inverse vel solver
     
-    KDL::ChainIkSolverPos_NR iksolver_pos(kinematicChain, fksolver, iksolver, 1000, 1e-7);
+    KDL::ChainIkSolverPos_NR iksolver_pos(kinematicChain, fksolver, iksolver);
 
     KDL::JntArray result = KDL::JntArray(kinematicChain.getNrOfJoints());
 
@@ -347,36 +316,23 @@ void RobotHWInterface::newVelCallback(const geometry_msgs::Twist &msg)
 {
     if (isMoving)
     {
-        ROS_INFO("Robot is in moving state. Velocity callback ignored.");
+        // ROS_INFO("Robot is in moving state. Velocity callback ignored.");
         return;
     }
 
-    geometry_msgs::Twist converted_msg = msg;
-//    if(fabs(converted_msg.linear.x) < 0.5)
-//        converted_msg.linear.x = 0;
-//    if(fabs(converted_msg.linear.y) < 0.5)
-//        converted_msg.linear.y = 0;
-//    if(fabs(converted_msg.linear.z) < 0.5)
-//        converted_msg.linear.z = 0;
-//    if(fabs(converted_msg.angular.x) < 0.5)
-//        converted_msg.angular.x = 0;
-//    if(fabs(converted_msg.angular.y) < 0.5)
-//        converted_msg.angular.y = 0;
-//    if(fabs(converted_msg.linear.x) < 0.5)
-//        converted_msg.angular.z = 0;
-    jointVelocities(0) = converted_msg.linear.x;
-    jointVelocities(1) = converted_msg.linear.y;
-    jointVelocities(2) = converted_msg.linear.z;
-    jointVelocities(3) = converted_msg.angular.x;
-    jointVelocities(4) = converted_msg.angular.y;
-    jointVelocities(5) = converted_msg.angular.z;
+    jointVelocities(0) = msg.linear.x;
+    jointVelocities(1) = msg.linear.y;
+    jointVelocities(2) = msg.linear.z;
+    jointVelocities(3) = msg.angular.x;
+    jointVelocities(4) = msg.angular.y;
+    jointVelocities(5) = msg.angular.z;
 }
 
 void RobotHWInterface::newPosCallback(const geometry_msgs::Twist &msg)
 {
     if (isMoving)
     {
-        ROS_INFO("Robot is in moving state. Position callback ignored.");
+        // ROS_INFO("Robot is in moving state. Position callback ignored.");
         return;
     }
 
@@ -388,7 +344,7 @@ void RobotHWInterface::newPosCallback(const geometry_msgs::Twist &msg)
     pos(4) = msg.angular.y;
     pos(5) = msg.angular.z;
 
-    setCartPos(&pos, 1, 6);
+    setManipulatorPos(pos, 1, 6);
 }
 
 void RobotHWInterface::newRobotState(const sensor_msgs::JointState &msg)
@@ -432,40 +388,36 @@ void RobotHWInterface::newRobotState(const sensor_msgs::JointState &msg)
     // Transformation is happening in base_link
     tool_pose.header.frame_id = "base_link";
     poseStampedPub.publish(tool_pose);
+
+    geometry_msgs::Point point;
+    point.x = tool.p.x();
+    point.y = tool.p.y();
+    point.z = tool.p.z();
+    markers.points.push_back(point);
+
+    markerPub.publish(markers);
 }
 
-void RobotHWInterface::newTrajCallback(const geometry_msgs::Twist &msg)
+void RobotHWInterface::newTrajCallback(const manipulator::Trajectory &msg)
 {
-    KDL::JntArray trajCartPoint = KDL::JntArray(numJoints);
-    trajCartPoint(0) = msg.linear.x;
-    trajCartPoint(1) = msg.linear.y;
-    trajCartPoint(2) = msg.linear.z;
-    trajCartPoint(3) = msg.angular.x;
-    trajCartPoint(4) = msg.angular.y;
-    trajCartPoint(5) = msg.angular.z;
+    if (msg.pos.size() < msg.pointsNr * numJoints)
+        ROS_ERROR("Trajectory joint information insufficient (wrong size)");
 
-    KDL::JntArray trajJntPoint = solveIndirectPosKinematics(trajCartPoint);
+    ROS_INFO("Generating new trajectory");
+    INTERPOLATION_TYPE interp = LINEAR;
+    ManipulatorCmd cmdMode = TOOL;
 
-    trajectory_msgs::JointTrajectory traj;
+    if(msg.isCubic)
+        interp = CUBIC;
+    if(!msg.isToolMode)
+        cmdMode = JOINT;
 
-    traj.header.frame_id = "base_link";
-    traj.joint_names.resize(numJoints);
-    traj.points.resize(1);
+    KDL::JntArray pos(msg.pointsNr * numJoints);
 
-    traj.points[0].positions.resize(numJoints);
+    for(int i = 0; i < pos.rows(); ++i)
+        pos(i) = msg.pos[i];
 
-    for(int i = 0; i < numJoints; ++i)
-        traj.joint_names[i] = jointNames[i];
-
-    traj.header.stamp = ros::Time::now()+ros::Duration(1.0);
-    traj.points[0].time_from_start = ros::Duration(10);
-
-    for(int i = 0; i < numJoints; ++i)
-        traj.points[0].positions[i] = trajJntPoint(i);
-
-    ROS_INFO("Generating trajectory");
-
-    commandTrajectoryPub.publish(traj);
+    setManipulatorPos(pos, msg.pointsNr, msg.timeSec, interp, msg.interpPoints, cmdMode);
 }
 
 bool RobotHWInterface::setVel(const KDL::JntArray &vel)
@@ -490,11 +442,12 @@ bool RobotHWInterface::setPos(const KDL::JntArray &pos)
     return true;
 }
 
-bool RobotHWInterface::setCartPos(const KDL::JntArray *pos,
+bool RobotHWInterface::setManipulatorPos(const KDL::JntArray &pos,
     size_t pointsNr,
     double timeSec,
     INTERPOLATION_TYPE interp,
-    unsigned interpPoints)
+    unsigned interpPoints,
+    ManipulatorCmd cmdMode)
 {
     if(isMoving)
     {
@@ -503,42 +456,53 @@ bool RobotHWInterface::setCartPos(const KDL::JntArray *pos,
     }
 
     isMoving = true;
-    mode = TOOL;
+    mode = cmdMode;
 
     KDL::JntArray vels = KDL::JntArray(numJoints);
     KDL::JntArray startPos = KDL::JntArray(numJoints);
     KDL::JntArray newPos = KDL::JntArray(numJoints);
     KDL::Frame toolPos;
+    KDL::JntArray vini = KDL::JntArray(numJoints);
+    KDL::JntArray vfini = KDL::JntArray(numJoints);
+    KDL::SetToZero(vini);
+    KDL::SetToZero(vfini);
 
-    double startTime = (double)ros::Time::now().toNSec() / 1000000000;
+    double startTime = (double)ros::WallTime::now().toNSec() / 1000000000;
     double endTime = startTime + timeSec;
-    double currentTime = startTime;
+    double currentTime = 0;
+    double dT = timeSec / pointsNr;
+    double dt = dT / interpPoints;
+    double a, b, c, dq = 0;
 
     ROS_INFO("startTime: %f, endTime: %f\n", startTime, startTime + timeSec);
 
+    markers.action = visualization_msgs::Marker::DELETEALL;
+    markerPub.publish(markers);
+    markers.points.clear();
+    markers.action = visualization_msgs::Marker::ADD;
+
     for(int i = 0; i < pointsNr; ++i)
     {
-        if(pos[i].rows() != numJoints)
-        {
-            ROS_INFO("Wrong position array size %d\n", i);
-            KDL::SetToZero(vels);
-            setVel(vels);
-            isMoving = false;
-            return false;
+        if(mode == TOOL) {            
+            toolPos = solveDirectKinematics(jointPosition);
+            startPos(0) = toolPos.p.x();
+            startPos(1) = toolPos.p.y();
+            startPos(2) = toolPos.p.z();
+            toolPos.M.GetRPY(startPos(3), startPos(4), startPos(5));
         }
-
-        toolPos = solveDirectKinematics(jointPosition);
-        startPos(0) = toolPos.p.x();
-        startPos(1) = toolPos.p.y();
-        startPos(2) = toolPos.p.z();
-        toolPos.M.GetRPY(startPos(3), startPos(4), startPos(5));
 
         ROS_INFO("Point %d:", i);
         
-        for(int j = 0; j < numJoints; ++j) 
+        for(int j = 0; j < numJoints; ++j)
+            vini(j) = vfini(j);
+
+        if(interp == LINEAR)
         {
-            ROS_INFO("[%d]: %f, ", j, pos[i](j));
-            vels(j) = (pos[i](j) - startPos(j)) / timeSec;
+            for(int j = i * numJoints; j < (i + 1) * numJoints; ++j)
+            {
+                dq = pos(j) - startPos(j % numJoints);
+                vels(j % numJoints) = dq / dT;
+            }
         }
 
         for(int j = 0; j < interpPoints; ++j)
@@ -546,33 +510,56 @@ bool RobotHWInterface::setCartPos(const KDL::JntArray *pos,
             ROS_INFO("Point[%d][%d]:", i, j);
 
             for(int k = 0; k < numJoints; ++k)
-                ROS_INFO("[%d]: %f, ",
-                    k, startPos(k) + vels(k) * (j+1) * timeSec / interpPoints);
+                ROS_INFO("[%d]: %f, ", k, startPos(k) + vels(k) * (j+1) * dt);
 
-            endTime =  startTime + (j+1) * timeSec / interpPoints;
+            endTime = (j + 1) * dt;
 
             while(currentTime < endTime)
             {
-                currentTime = (double)ros::Time::now().toNSec() / 1000000000;
+                currentTime = (double)ros::WallTime::now().toNSec() / 1000000000;
 
                 if(currentTime >= startTime + timeSec)
                 {
+                    ROS_INFO("TIMEOUT!");
                     i = pointsNr;
                     j = interpPoints;
                     break;
                 }
+                
+                currentTime -= (startTime + i * dT);
 
                 for(int k = 0; k < numJoints; ++k)
-                    newPos(k) = startPos(k) + vels(k) * (currentTime - startTime);
+                {
+                    if(interp == LINEAR)
+                    {
+                        newPos(k) = startPos(k) + vels(k) * currentTime;
+                    }
+                    else
+                    {
+                        dq = pos(i * numJoints + k) - startPos(k);
+                        vfini(k) = -0.5 * vini(k) + 1.5 * dq / dT;
+                        a = -0.5 + 1.5 * vini(k) * dT / dq; 
+                        b = 1.5 - 2.5 * vini(k) * dT / dq;
+                        c = vini(k) * dT / dq;
+
+                        vels(k) = dq * (3 * a * pow(currentTime, 2.0) / pow(dT, 3.0)
+                            + 2 * b * currentTime / pow(dT, 2.0) + c / dT);
+
+                        newPos(k) = startPos(k) + dq * (a * pow(currentTime / dT, 3.0) +
+                            b * pow(currentTime / dT, 2.0) + c * currentTime / dT);
+                    }
+                }
 
                 setVel(vels);
                 setPos(newPos);
             }
+
+            currentTime = 0;
         }
     }
 
     ROS_INFO("Ending trajectory, duration: %f\n",
-        (double)ros::Time::now().toNSec() / 1000000000 - startTime);
+        (double)ros::WallTime::now().toNSec() / 1000000000 - startTime);
 
     toolPos = solveDirectKinematics(jointPosition);
     startPos(0) = toolPos.p.x();
@@ -592,23 +579,52 @@ bool RobotHWInterface::setCartPos(const KDL::JntArray *pos,
     return true;
 }
 
-bool RobotHWInterface::setJntPos(const KDL::JntArray &pos,
+bool RobotHWInterface::setCartPos(ros::NodeHandle &nh,
+    const std::vector<double> &pos,
     size_t pointsNr,
     double timeSec,
-    INTERPOLATION_TYPE interp,
+    bool isCubic,
     unsigned interpPoints)
 {
-    if(isMoving)
-    {
-        ROS_INFO("Robot is in moving state. Set jnt pos ignored.");
-        return false;
-    }
+    manipulator::Trajectory traj;
+    traj.pos = pos;
+    traj.pointsNr = pointsNr;
+    traj.timeSec = timeSec;
+    traj.isCubic = isCubic;
+    traj.interpPoints = interpPoints;
+    traj.isToolMode = true;
 
-    isMoving = true;
-    mode = TOOL;
-    controller = VELOCITY_CONTROLLER;
+    ros::Publisher pub = nh.advertise<manipulator::Trajectory>("/manipulator/trajectory", 1, true);
 
-    isMoving = false;
+    pub.publish(traj);
 
-    return false;
+    ros::spinOnce();
+    ros::Duration(timeSec).sleep();
+
+    return true;
+}
+
+bool RobotHWInterface::setJntPos(ros::NodeHandle &nh,
+    const std::vector<double> &pos,
+    size_t pointsNr,
+    double timeSec,
+    bool isCubic,
+    unsigned interpPoints)
+{
+    manipulator::Trajectory traj;
+    traj.pos = pos;
+    traj.pointsNr = pointsNr;
+    traj.timeSec = timeSec;
+    traj.isCubic = isCubic;
+    traj.interpPoints = interpPoints;
+    traj.isToolMode = false;
+
+    ros::Publisher pub = nh.advertise<manipulator::Trajectory>("/manipulator/trajectory", 1, true);
+
+    pub.publish(traj);
+
+    ros::spinOnce();
+    ros::Duration(timeSec).sleep();
+
+    return true;
 }

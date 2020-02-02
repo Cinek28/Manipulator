@@ -25,14 +25,6 @@ protected:
     hardware_interface::VelocityJointInterface velocityJointInt;
     hardware_interface::EffortJointInterface effortJointInt;
 
-    // joint_limits_interface::EffortJointSaturationInterface effort_joint_saturation_interface_;
-    // joint_limits_interface::EffortJointSoftLimitsInterface effort_joint_limits_interface_;
-    // joint_limits_interface::PositionJointSaturationInterface position_joint_saturation_interface_;
-    // joint_limits_interface::PositionJointSoftLimitsInterface position_joint_limits_interface_;
-    // joint_limits_interface::VelocityJointSaturationInterface velocity_joint_saturation_interface_;
-    // joint_limits_interface::VelocityJointSoftLimitsInterface velocity_joint_limits_interface_;
-
-
     // Shared memory
     int numJoints;
 
@@ -45,10 +37,6 @@ protected:
     KDL::JntArray jointPositionCommands;
     KDL::JntArray jointVelocityCommands;
     KDL::JntArray jointEffortCommands;
-    // std::vector<double> jointLowerLimits;
-    // std::vector<double> jointUpperLimits;
-    // std::vector<double> jointEffortLimits;
-
 };
 
 #endif //MANIPULATORHW_BASE_H
